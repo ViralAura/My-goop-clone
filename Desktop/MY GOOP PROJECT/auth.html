@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP – Sign In</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+          },
+          fontFamily: {
+            serif: ['"Times New Roman"','Georgia','serif'],
+            sans:  ['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nl { position: relative; }
+    .nl::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: #1a1a1a; transition: width .3s;
+    }
+    .nl:hover::after { width: 100%; }
+
+    /* Tab underline indicator */
+    .tab-active {
+      border-bottom: 2px solid #1a1a1a;
+      color: #1a1a1a;
+    }
+    .tab-inactive {
+      border-bottom: 2px solid transparent;
+      color: #8c8c8c;
+    }
+
+    /* Form panel transitions */
+    .form-panel {
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .form-panel.hidden-panel {
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      position: absolute;
+      width: 100%;
+    }
+    .form-panel.active-panel {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Input focus ring */
+    .goop-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #e5e5e5;
+      background: white;
+      font-size: 13px;
+      font-family: Helvetica, Arial, sans-serif;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .goop-input:focus { border-color: #1a1a1a; }
+    .goop-input.error { border-color: #dc2626; }
+
+    /* Password toggle button */
+    .pw-toggle { cursor: pointer; }
+
+    /* Shake animation for form errors */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+    .shake { animation: shake .4s ease; }
+
+    /* Fade up on load */
+    @keyframes fu {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu { animation: fu .6s ease-out both; }
+
+    /* Password strength bar */
+    .strength-bar { height: 3px; border-radius: 2px; transition: width .3s, background .3s; }
+  </style>
+</head>
+<body class="bg-gp-cream text-gp font-sans min-h-screen flex flex-col">
+
+<!-- ===== ANNOUNCEMENT BAR ===== -->
+<div class="bg-gp text-white text-center py-2.5 text-[11px] tracking-[.22em] uppercase">
+  Complimentary shipping on orders over $50 &ensp;|&ensp; New arrivals weekly
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<header class="border-b border-gp-line bg-white/95 backdrop-blur">
+  <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="hidden md:flex gap-8">
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Shop</a>
+      <a href="category.html?cat=beauty" class="nl text-[11px] tracking-[.2em] uppercase">Beauty</a>
+      <a href="category.html?cat=fashion" class="nl text-[11px] tracking-[.2em] uppercase">Fashion</a>
+      <a href="category.html?cat=wellness" class="nl text-[11px] tracking-[.2em] uppercase">Wellness</a>
+    </div>
+    <a href="index.html" class="text-[26px] md:text-[30px] tracking-[.35em] uppercase font-serif font-bold select-none">goop</a>
+    <div class="flex items-center gap-5">
+      <button aria-label="Search" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+      </button>
+      <a href="auth.html" aria-label="Account" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      </a>
+      <a href="cart.html" class="relative hover:opacity-50 transition-opacity" aria-label="Cart">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        <span id="cart-count" class="hidden absolute -top-2 -right-2 bg-gp text-white text-[9px] min-w-[16px] h-4 rounded-full items-center justify-center"></span>
+      </a>
+      <button id="menu-btn" class="md:hidden hover:opacity-50" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div id="mob-menu" class="hidden md:hidden border-t border-gp-line px-6 py-5 space-y-4 bg-white">
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Shop All</a>
+    <a href="category.html?cat=beauty" class="block text-[11px] tracking-[.2em] uppercase">Beauty</a>
+    <a href="category.html?cat=fashion" class="block text-[11px] tracking-[.2em] uppercase">Fashion</a>
+    <a href="category.html?cat=wellness" class="block text-[11px] tracking-[.2em] uppercase">Wellness</a>
+  </div>
+</header>
+
+<!-- ===== MAIN AUTH LAYOUT ===== -->
+<main class="flex-1 flex items-center justify-center py-16 px-4">
+  <div class="w-full max-w-md fu">
+
+    <!-- Logo mark above card -->
+    <div class="text-center mb-8">
+      <a href="index.html" class="text-[22px] tracking-[.4em] uppercase font-serif font-bold">goop</a>
+      <p class="text-[11px] text-gp-mid tracking-[.2em] uppercase mt-1">Your Account</p>
+    </div>
+
+    <!-- ── AUTH CARD ── -->
+    <div class="bg-white shadow-sm border border-gp-line">
+
+      <!-- Tab switcher: Sign In / Create Account -->
+      <div class="flex border-b border-gp-line">
+        <button
+          id="tab-login"
+          class="tab-active flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors"
+          onclick="switchTab('login')"
+        >
+          Sign In
+        </button>
+        <button
+          id="tab-signup"
+          class="tab-inactive flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors"
+          onclick="switchTab('signup')"
+        >
+          Create Account
+        </button>
+      </div>
+
+      <!-- Forms wrapper (relative so panels can stack) -->
+      <div class="p-8 relative">
+
+        <!-- ══════════════════════════════════════
+             LOGIN FORM
+             ══════════════════════════════════════ -->
+        <div id="panel-login" class="form-panel active-panel">
+
+          <!-- Success message (hidden until login succeeds) -->
+          <div id="login-success" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-[12px] leading-relaxed">
+            <strong>Welcome back!</strong> Redirecting you to your account…
+          </div>
+
+          <!-- Error message (hidden until login fails) -->
+          <div id="login-error" class="hidden mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+            Incorrect email or password. Please try again.
+          </div>
+
+          <form id="login-form" novalidate>
+
+            <!-- Email -->
+            <div class="mb-5">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="login-email">Email Address</label>
+              <input
+                class="goop-input"
+                type="email"
+                id="login-email"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+              />
+              <p class="hidden mt-1.5 text-[11px] text-red-600" id="login-email-err">Please enter a valid email address.</p>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-2">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="login-password">Password</label>
+              <div class="relative">
+                <input
+                  class="goop-input pr-10"
+                  type="password"
+                  id="login-password"
+                  name="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                />
+                <!-- Show/hide password toggle -->
+                <button
+                  type="button"
+                  class="pw-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gp-mid hover:text-gp transition-colors"
+                  onclick="togglePassword('login-password', this)"
+                  aria-label="Toggle password visibility"
+                >
+                  <svg class="w-4 h-4" id="eye-login" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="hidden mt-1.5 text-[11px] text-red-600" id="login-password-err">Password is required.</p>
+            </div>
+
+            <!-- Forgot password link -->
+            <div class="text-right mb-6">
+              <button type="button" onclick="showForgot()" class="text-[11px] text-gp-mid hover:text-gp transition-colors tracking-wide underline underline-offset-2">
+                Forgot password?
+              </button>
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              id="login-btn"
+              class="w-full py-4 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors flex items-center justify-center gap-2"
+            >
+              <span id="login-btn-text">Sign In</span>
+              <!-- Spinner (hidden by default) -->
+              <svg id="login-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+            </button>
+
+          </form>
+
+          <!-- ── FORGOT PASSWORD PANEL ── -->
+          <div id="forgot-panel" class="hidden mt-6 pt-6 border-t border-gp-line">
+            <p class="text-[12px] text-gp-mid mb-4">Enter your email and we'll send you a reset link.</p>
+            <div class="flex gap-2">
+              <input
+                type="email"
+                id="forgot-email"
+                placeholder="you@example.com"
+                class="goop-input flex-1"
+              />
+              <button
+                onclick="sendReset()"
+                class="shrink-0 px-4 py-3 bg-gp text-white text-[10px] tracking-[.15em] uppercase hover:bg-gp/85 transition-colors"
+              >
+                Send
+              </button>
+            </div>
+            <p id="forgot-msg" class="hidden mt-2 text-[11px]"></p>
+          </div>
+
+          <!-- Divider -->
+          <div class="relative my-7">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gp-line"></div></div>
+            <div class="relative text-center"><span class="bg-white px-4 text-[11px] text-gp-mid tracking-wide">or continue with</span></div>
+          </div>
+
+          <!-- Social Sign In Buttons -->
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="socialLogin('Google')" class="flex items-center justify-center gap-2 py-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all text-[11px] tracking-[.1em] uppercase">
+              <!-- Google icon -->
+              <svg class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              Google
+            </button>
+            <button onclick="socialLogin('Apple')" class="flex items-center justify-center gap-2 py-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all text-[11px] tracking-[.1em] uppercase">
+              <!-- Apple icon -->
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              Apple
+            </button>
+          </div>
+
+          <!-- Switch to signup -->
+          <p class="text-center text-[12px] text-gp-mid mt-6">
+            Don't have an account?
+            <button onclick="switchTab('signup')" class="text-gp hover:underline underline-offset-2 ml-1">Create one</button>
+          </p>
+        </div>
+
+        <!-- ══════════════════════════════════════
+             SIGN UP FORM
+             ══════════════════════════════════════ -->
+        <div id="panel-signup" class="form-panel hidden-panel">
+
+          <!-- Success message -->
+          <div id="signup-success" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-[12px] leading-relaxed">
+            <strong>Account created!</strong> Welcome to goop. Redirecting…
+          </div>
+
+          <form id="signup-form" novalidate>
+
+            <!-- First + Last Name row -->
+            <div class="grid grid-cols-2 gap-4 mb-5">
+              <div>
+                <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="signup-first">First Name</label>
+                <input class="goop-input" type="text" id="signup-first" placeholder="Jane" autocomplete="given-name" />
+                <p class="hidden mt-1.5 text-[11px] text-red-600" id="signup-first-err">Required.</p>
+              </div>
+              <div>
+                <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="signup-last">Last Name</label>
+                <input class="goop-input" type="text" id="signup-last" placeholder="Doe" autocomplete="family-name" />
+                <p class="hidden mt-1.5 text-[11px] text-red-600" id="signup-last-err">Required.</p>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-5">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="signup-email">Email Address</label>
+              <input class="goop-input" type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" />
+              <p class="hidden mt-1.5 text-[11px] text-red-600" id="signup-email-err">Please enter a valid email address.</p>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-2">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="signup-password">Password</label>
+              <div class="relative">
+                <input
+                  class="goop-input pr-10"
+                  type="password"
+                  id="signup-password"
+                  placeholder="Min. 8 characters"
+                  autocomplete="new-password"
+                  oninput="checkStrength(this.value)"
+                />
+                <button
+                  type="button"
+                  class="pw-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gp-mid hover:text-gp transition-colors"
+                  onclick="togglePassword('signup-password', this)"
+                  aria-label="Toggle password visibility"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </button>
+              </div>
+              <p class="hidden mt-1.5 text-[11px] text-red-600" id="signup-password-err">Password must be at least 8 characters.</p>
+            </div>
+
+            <!-- Password strength meter -->
+            <div class="mb-5">
+              <div class="flex gap-1 mt-2">
+                <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-1" class="strength-bar w-0"></div></div>
+                <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-2" class="strength-bar w-0"></div></div>
+                <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-3" class="strength-bar w-0"></div></div>
+                <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-4" class="strength-bar w-0"></div></div>
+              </div>
+              <p id="str-label" class="text-[10px] text-gp-mid mt-1.5 h-3"></p>
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="mb-5">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2" for="signup-confirm">Confirm Password</label>
+              <input class="goop-input" type="password" id="signup-confirm" placeholder="Repeat password" autocomplete="new-password" />
+              <p class="hidden mt-1.5 text-[11px] text-red-600" id="signup-confirm-err">Passwords do not match.</p>
+            </div>
+
+            <!-- Newsletter opt-in -->
+            <label class="flex items-start gap-3 mb-6 cursor-pointer group">
+              <div class="relative mt-0.5">
+                <input type="checkbox" id="newsletter-opt" class="sr-only peer" />
+                <div class="w-4 h-4 border border-gp-line peer-checked:bg-gp peer-checked:border-gp transition-colors flex items-center justify-center">
+                  <svg class="w-2.5 h-2.5 text-white hidden peer-checked:block" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                </div>
+              </div>
+              <span class="text-[12px] text-gp-mid leading-relaxed">
+                Sign me up for the goop newsletter — new arrivals, exclusive offers, and wellness insights.
+              </span>
+            </label>
+
+            <!-- Terms -->
+            <p class="text-[11px] text-gp-mid leading-relaxed mb-6">
+              By creating an account, you agree to our
+              <a href="#" class="underline underline-offset-2 hover:text-gp transition-colors">Terms of Service</a>
+              and
+              <a href="#" class="underline underline-offset-2 hover:text-gp transition-colors">Privacy Policy</a>.
+            </p>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              id="signup-btn"
+              class="w-full py-4 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors flex items-center justify-center gap-2"
+            >
+              <span id="signup-btn-text">Create Account</span>
+              <svg id="signup-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+            </button>
+
+          </form>
+
+          <!-- Divider + Social -->
+          <div class="relative my-7">
+            <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gp-line"></div></div>
+            <div class="relative text-center"><span class="bg-white px-4 text-[11px] text-gp-mid tracking-wide">or sign up with</span></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <button onclick="socialLogin('Google')" class="flex items-center justify-center gap-2 py-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all text-[11px] tracking-[.1em] uppercase">
+              <svg class="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Google
+            </button>
+            <button onclick="socialLogin('Apple')" class="flex items-center justify-center gap-2 py-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all text-[11px] tracking-[.1em] uppercase">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              Apple
+            </button>
+          </div>
+
+          <!-- Switch to login -->
+          <p class="text-center text-[12px] text-gp-mid mt-6">
+            Already have an account?
+            <button onclick="switchTab('login')" class="text-gp hover:underline underline-offset-2 ml-1">Sign in</button>
+          </p>
+        </div>
+
+      </div><!-- /forms wrapper -->
+    </div><!-- /auth card -->
+
+    <!-- Guest checkout shortcut -->
+    <p class="text-center text-[11px] text-gp-mid mt-6">
+      Just browsing?
+      <a href="category.html" class="text-gp hover:underline underline-offset-2 ml-1">Continue as guest</a>
+    </p>
+
+  </div>
+</main>
+
+<!-- ===== FOOTER (minimal on auth page) ===== -->
+<footer class="border-t border-gp-line bg-white">
+  <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-gp-mid">
+    <span>&copy; 2026 goop, Inc. All rights reserved.</span>
+    <div class="flex gap-6">
+      <a href="#" class="hover:text-gp transition-colors">Privacy Policy</a>
+      <a href="#" class="hover:text-gp transition-colors">Terms of Service</a>
+      <a href="#" class="hover:text-gp transition-colors">Contact Us</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ──────────────────────────────────────────────────────────
+   CART UTILITIES (same across all pages)
+   ────────────────────────────────────────────────────────── */
+function getCart()  { return JSON.parse(localStorage.getItem('goopCart') || '[]'); }
+function saveCart(c){ localStorage.setItem('goopCart', JSON.stringify(c)); updateBadge(); }
+function updateBadge() {
+  const b = document.getElementById('cart-count');
+  if (!b) return;
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  if (total > 0) { b.textContent = total; b.classList.remove('hidden'); b.classList.add('flex'); }
+  else { b.classList.add('hidden'); b.classList.remove('flex'); }
+}
+
+/* ──────────────────────────────────────────────────────────
+   TAB SWITCHER
+   Toggles between the Sign In and Create Account panels
+   with a smooth fade + slide transition.
+   ────────────────────────────────────────────────────────── */
+function switchTab(tab) {
+  const loginPanel  = document.getElementById('panel-login');
+  const signupPanel = document.getElementById('panel-signup');
+  const loginTab    = document.getElementById('tab-login');
+  const signupTab   = document.getElementById('tab-signup');
+
+  if (tab === 'login') {
+    loginPanel.classList.remove('hidden-panel');
+    loginPanel.classList.add('active-panel');
+    signupPanel.classList.remove('active-panel');
+    signupPanel.classList.add('hidden-panel');
+    loginTab.className  = 'tab-active flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors';
+    signupTab.className = 'tab-inactive flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors';
+  } else {
+    signupPanel.classList.remove('hidden-panel');
+    signupPanel.classList.add('active-panel');
+    loginPanel.classList.remove('active-panel');
+    loginPanel.classList.add('hidden-panel');
+    signupTab.className = 'tab-active flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors';
+    loginTab.className  = 'tab-inactive flex-1 py-4 text-[11px] tracking-[.2em] uppercase transition-colors';
+  }
+
+  // Clear all error states when switching
+  clearErrors();
+}
+
+/* ──────────────────────────────────────────────────────────
+   PASSWORD VISIBILITY TOGGLE
+   Switches input type between 'password' and 'text'.
+   Also swaps the eye icon between open/closed.
+   ────────────────────────────────────────────────────────── */
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isHidden = input.type === 'password';
+  input.type = isHidden ? 'text' : 'password';
+
+  // Swap icon
+  btn.innerHTML = isHidden
+    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+      </svg>`
+    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>`;
+}
+
+/* ──────────────────────────────────────────────────────────
+   PASSWORD STRENGTH METER
+   Scores the password 1–4 based on length, uppercase,
+   numbers, and special characters. Updates the visual
+   bars and label text in real time as the user types.
+   ────────────────────────────────────────────────────────── */
+function checkStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)                    score++;
+  if (/[A-Z]/.test(pw))                  score++;
+  if (/[0-9]/.test(pw))                  score++;
+  if (/[^A-Za-z0-9]/.test(pw))           score++;
+
+  const colors = ['', '#dc2626', '#f97316', '#eab308', '#16a34a'];
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong'];
+  const widths  = ['0%', '25%', '50%', '75%', '100%'];
+
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById(`str-${i}`);
+    bar.style.width     = i <= score ? '100%' : '0%';
+    bar.style.background = i <= score ? colors[score] : '';
+  }
+
+  const label = document.getElementById('str-label');
+  label.textContent  = pw.length > 0 ? labels[score] : '';
+  label.style.color  = colors[score];
+}
+
+/* ──────────────────────────────────────────────────────────
+   FORM VALIDATION HELPERS
+   ────────────────────────────────────────────────────────── */
+function showError(inputId, errId) {
+  const input = document.getElementById(inputId);
+  const err   = document.getElementById(errId);
+  if (input)  input.classList.add('error');
+  if (err)    err.classList.remove('hidden');
+}
+
+function hideError(inputId, errId) {
+  const input = document.getElementById(inputId);
+  const err   = document.getElementById(errId);
+  if (input)  input.classList.remove('error');
+  if (err)    err.classList.add('hidden');
+}
+
+function clearErrors() {
+  document.querySelectorAll('.goop-input').forEach(el => el.classList.remove('error'));
+  document.querySelectorAll('[id$="-err"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById('login-error').classList.add('hidden');
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function shakeForm(formId) {
+  const form = document.getElementById(formId);
+  form.classList.add('shake');
+  form.addEventListener('animationend', () => form.classList.remove('shake'), { once: true });
+}
+
+/* ──────────────────────────────────────────────────────────
+   LOGIN FORM HANDLER
+   Validates email + password, shows a loading spinner,
+   then either shows a success message or an error.
+
+   Demo credentials: any valid email + password length >= 6
+   (Replace this with your real API fetch call later.)
+   ────────────────────────────────────────────────────────── */
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearErrors();
+
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  let   valid    = true;
+
+  // Validate email
+  if (!isValidEmail(email)) {
+    showError('login-email', 'login-email-err');
+    valid = false;
+  }
+
+  // Validate password not empty
+  if (!password) {
+    showError('login-password', 'login-password-err');
+    valid = false;
+  }
+
+  if (!valid) { shakeForm('login-form'); return; }
+
+  // ── LOADING STATE ──
+  const btn     = document.getElementById('login-btn');
+  const btnText = document.getElementById('login-btn-text');
+  const spinner = document.getElementById('login-spinner');
+  btn.disabled  = true;
+  btnText.textContent = 'Signing in…';
+  spinner.classList.remove('hidden');
+
+  // ── SIMULATED API CALL ──
+  // Replace this setTimeout with:
+  //   const res  = await fetch('/api/login', { method:'POST', body: JSON.stringify({email, password}) });
+  //   const data = await res.json();
+  await new Promise(r => setTimeout(r, 1500));
+
+  // Demo: password must be >= 6 chars to "succeed"
+  if (password.length >= 6) {
+    document.getElementById('login-success').classList.remove('hidden');
+    btnText.textContent = 'Success ✓';
+    spinner.classList.add('hidden');
+
+    // Save a basic user session to localStorage
+    localStorage.setItem('goopUser', JSON.stringify({ email, loggedIn: true }));
+
+    // Redirect to homepage after brief delay
+    setTimeout(() => { window.location.href = 'index.html'; }, 1800);
+  } else {
+    // Show error
+    document.getElementById('login-error').classList.remove('hidden');
+    btn.disabled = false;
+    btnText.textContent = 'Sign In';
+    spinner.classList.add('hidden');
+    shakeForm('login-form');
+  }
+});
+
+/* ──────────────────────────────────────────────────────────
+   SIGN UP FORM HANDLER
+   Validates all fields, shows strength requirements,
+   confirms password match, then simulates account creation.
+   ────────────────────────────────────────────────────────── */
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  clearErrors();
+
+  const first    = document.getElementById('signup-first').value.trim();
+  const last     = document.getElementById('signup-last').value.trim();
+  const email    = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm  = document.getElementById('signup-confirm').value;
+  let   valid    = true;
+
+  if (!first)                { showError('signup-first', 'signup-first-err');       valid = false; }
+  if (!last)                 { showError('signup-last', 'signup-last-err');         valid = false; }
+  if (!isValidEmail(email))  { showError('signup-email', 'signup-email-err');       valid = false; }
+  if (password.length < 8)   { showError('signup-password', 'signup-password-err'); valid = false; }
+  if (password !== confirm)  { showError('signup-confirm', 'signup-confirm-err');   valid = false; }
+
+  if (!valid) { shakeForm('signup-form'); return; }
+
+  // ── LOADING STATE ──
+  const btn     = document.getElementById('signup-btn');
+  const btnText = document.getElementById('signup-btn-text');
+  const spinner = document.getElementById('signup-spinner');
+  btn.disabled  = true;
+  btnText.textContent = 'Creating account…';
+  spinner.classList.remove('hidden');
+
+  // ── SIMULATED API CALL ──
+  // Replace with: await fetch('/api/register', { method:'POST', ... })
+  await new Promise(r => setTimeout(r, 1800));
+
+  document.getElementById('signup-success').classList.remove('hidden');
+  btnText.textContent = 'Account Created ✓';
+  spinner.classList.add('hidden');
+
+  // Save session
+  localStorage.setItem('goopUser', JSON.stringify({
+    email,
+    name: `${first} ${last}`,
+    loggedIn: true,
+    newsletter: document.getElementById('newsletter-opt').checked,
+  }));
+
+  // Redirect
+  setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+});
+
+/* ──────────────────────────────────────────────────────────
+   FORGOT PASSWORD
+   ────────────────────────────────────────────────────────── */
+function showForgot() {
+  document.getElementById('forgot-panel').classList.toggle('hidden');
+}
+
+function sendReset() {
+  const email  = document.getElementById('forgot-email').value.trim();
+  const msgEl  = document.getElementById('forgot-msg');
+
+  if (!isValidEmail(email)) {
+    msgEl.textContent = 'Please enter a valid email address.';
+    msgEl.className   = 'mt-2 text-[11px] text-red-600';
+    msgEl.classList.remove('hidden');
+    return;
+  }
+
+  msgEl.textContent = `Reset link sent to ${email}. Check your inbox.`;
+  msgEl.className   = 'mt-2 text-[11px] text-green-700';
+  msgEl.classList.remove('hidden');
+  document.getElementById('forgot-email').value = '';
+}
+
+/* ──────────────────────────────────────────────────────────
+   SOCIAL LOGIN (placeholder)
+   When API is connected, replace with OAuth redirect.
+   ────────────────────────────────────────────────────────── */
+function socialLogin(provider) {
+  alert(`${provider} login will be connected to your API. For now, use the email form.`);
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE MENU + INIT
+   ────────────────────────────────────────────────────────── */
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('mob-menu').classList.toggle('hidden');
+});
+
+// If user is already logged in, show their name in a welcome state
+const savedUser = localStorage.getItem('goopUser');
+if (savedUser) {
+  const user = JSON.parse(savedUser);
+  if (user.loggedIn && user.name) {
+    document.title = `GOOP – Welcome back, ${user.name.split(' ')[0]}`;
+  }
+}
+
+updateBadge();
+</script>
+</body>
+</html>

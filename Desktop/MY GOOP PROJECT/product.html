@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP – Product</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+          },
+          fontFamily: {
+            serif: ['"Times New Roman"','Georgia','serif'],
+            sans:  ['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nl { position: relative; }
+    .nl::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: #1a1a1a; transition: width .3s;
+    }
+    .nl:hover::after { width: 100%; }
+    .ci { transition: transform .5s ease; }
+    .pc:hover .ci { transform: scale(1.04); }
+    /* Thumbnail active ring */
+    .thumb-active { outline: 2px solid #1a1a1a; outline-offset: 2px; }
+    /* Accordion toggle */
+    .acc-body { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .acc-body.open { max-height: 400px; }
+    .acc-icon { transition: transform .3s; }
+    .acc-icon.open { transform: rotate(45deg); }
+  </style>
+</head>
+<body class="bg-white text-gp font-sans">
+
+<!-- ===== ANNOUNCEMENT BAR ===== -->
+<div class="bg-gp text-white text-center py-2.5 text-[11px] tracking-[.22em] uppercase">
+  Complimentary shipping on orders over $50 &ensp;|&ensp; New arrivals weekly
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<header class="border-b border-gp-line sticky top-0 bg-white/95 backdrop-blur z-50">
+  <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="hidden md:flex gap-8">
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Shop</a>
+      <a href="category.html?cat=beauty" class="nl text-[11px] tracking-[.2em] uppercase">Beauty</a>
+      <a href="category.html?cat=fashion" class="nl text-[11px] tracking-[.2em] uppercase">Fashion</a>
+      <a href="category.html?cat=wellness" class="nl text-[11px] tracking-[.2em] uppercase">Wellness</a>
+    </div>
+    <a href="index.html" class="text-[26px] md:text-[30px] tracking-[.35em] uppercase font-serif font-bold select-none">goop</a>
+    <div class="flex items-center gap-5">
+      <button aria-label="Search" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+      </button>
+      <a href="auth.html" aria-label="Account" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      </a>
+      <a href="cart.html" class="relative hover:opacity-50 transition-opacity" aria-label="Cart">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        <span id="cart-count" class="hidden absolute -top-2 -right-2 bg-gp text-white text-[9px] min-w-[16px] h-4 rounded-full items-center justify-center"></span>
+      </a>
+      <button id="menu-btn" class="md:hidden hover:opacity-50" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div id="mob-menu" class="hidden md:hidden border-t border-gp-line px-6 py-5 space-y-4 bg-white">
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Shop All</a>
+    <a href="category.html?cat=beauty" class="block text-[11px] tracking-[.2em] uppercase">Beauty</a>
+    <a href="category.html?cat=fashion" class="block text-[11px] tracking-[.2em] uppercase">Fashion</a>
+    <a href="category.html?cat=wellness" class="block text-[11px] tracking-[.2em] uppercase">Wellness</a>
+  </div>
+</header>
+
+<!-- ===== BREADCRUMB ===== -->
+<div class="max-w-7xl mx-auto px-6 py-4">
+  <nav class="text-[11px] text-gp-mid tracking-wide" id="breadcrumb">
+    <a href="index.html" class="hover:text-gp transition-colors">Home</a>
+    <span class="mx-2">/</span>
+    <a href="category.html" class="hover:text-gp transition-colors">Shop</a>
+    <span class="mx-2">/</span>
+    <span class="text-gp" id="breadcrumb-product">Product</span>
+  </nav>
+</div>
+
+<!-- ===== PRODUCT DETAIL ===== -->
+<section class="max-w-7xl mx-auto px-6 pb-20">
+  <div class="grid md:grid-cols-2 gap-10 lg:gap-16">
+
+    <!-- LEFT: Image Gallery -->
+    <div>
+      <!-- Main product image -->
+      <div class="aspect-square bg-gp-lt rounded-sm overflow-hidden mb-4" id="main-image-wrap">
+        <img id="main-image" src="" alt="" class="w-full h-full object-cover" />
+      </div>
+      <!-- Thumbnail strip (simulates multiple product angles) -->
+      <div class="flex gap-3" id="thumbnails"></div>
+    </div>
+
+    <!-- RIGHT: Product Info -->
+    <div class="flex flex-col">
+      <!-- Brand -->
+      <p class="text-[11px] tracking-[.2em] uppercase text-gp-mid mb-2" id="product-brand"></p>
+      <!-- Name -->
+      <h1 class="text-2xl md:text-3xl font-serif leading-snug mb-3" id="product-name"></h1>
+      <!-- Price -->
+      <p class="text-lg mb-6" id="product-price"></p>
+      <!-- Rating (static 4.5 stars for demo) -->
+      <div class="flex items-center gap-2 mb-6">
+        <div class="flex gap-0.5 text-gp" id="stars"></div>
+        <span class="text-[11px] text-gp-mid">(127 reviews)</span>
+      </div>
+
+      <!-- Short description -->
+      <p class="text-sm text-gp-mid leading-relaxed mb-8" id="product-desc"></p>
+
+      <!-- Quantity selector -->
+      <div class="flex items-center gap-4 mb-6">
+        <span class="text-[11px] tracking-[.15em] uppercase">Quantity</span>
+        <div class="flex items-center border border-gp-line">
+          <button id="qty-minus" class="w-10 h-10 flex items-center justify-center text-lg hover:bg-gp-lt transition-colors">−</button>
+          <span id="qty-display" class="w-12 h-10 flex items-center justify-center text-sm border-x border-gp-line">1</span>
+          <button id="qty-plus" class="w-10 h-10 flex items-center justify-center text-lg hover:bg-gp-lt transition-colors">+</button>
+        </div>
+      </div>
+
+      <!-- Add to Bag button -->
+      <button id="add-to-bag" class="w-full py-4 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors mb-4">
+        Add to Bag
+      </button>
+
+      <!-- Wishlist link -->
+      <button class="w-full py-3.5 border border-gp-line text-[11px] tracking-[.2em] uppercase hover:border-gp transition-colors mb-8 flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+        Add to Wishlist
+      </button>
+
+      <!-- Accordion: Details / Ingredients / Shipping -->
+      <div class="border-t border-gp-line">
+        <!-- Details accordion -->
+        <div class="border-b border-gp-line">
+          <button class="acc-toggle w-full flex items-center justify-between py-4 text-[11px] tracking-[.2em] uppercase" data-target="acc-details">
+            <span>Details</span>
+            <span class="acc-icon text-lg leading-none">+</span>
+          </button>
+          <div class="acc-body" id="acc-details">
+            <div class="pb-5 text-sm text-gp-mid leading-relaxed" id="details-content">
+              Formulated with clean, high-performance ingredients for visible results. Dermatologist tested. Free from parabens, sulfates, and phthalates. Cruelty-free and vegan.
+            </div>
+          </div>
+        </div>
+        <!-- Ingredients accordion -->
+        <div class="border-b border-gp-line">
+          <button class="acc-toggle w-full flex items-center justify-between py-4 text-[11px] tracking-[.2em] uppercase" data-target="acc-ingredients">
+            <span>Ingredients</span>
+            <span class="acc-icon text-lg leading-none">+</span>
+          </button>
+          <div class="acc-body" id="acc-ingredients">
+            <div class="pb-5 text-sm text-gp-mid leading-relaxed">
+              Water, Glycerin, Niacinamide, Hyaluronic Acid, Vitamin C (Ascorbic Acid), Squalane, Jojoba Seed Oil, Aloe Barbadensis Leaf Juice, Tocopherol (Vitamin E), Citric Acid, Phenoxyethanol.
+            </div>
+          </div>
+        </div>
+        <!-- Shipping accordion -->
+        <div class="border-b border-gp-line">
+          <button class="acc-toggle w-full flex items-center justify-between py-4 text-[11px] tracking-[.2em] uppercase" data-target="acc-shipping">
+            <span>Shipping &amp; Returns</span>
+            <span class="acc-icon text-lg leading-none">+</span>
+          </button>
+          <div class="acc-body" id="acc-shipping">
+            <div class="pb-5 text-sm text-gp-mid leading-relaxed">
+              Free standard shipping on orders over $50. Expedited and overnight options available at checkout. Returns accepted within 30 days of delivery — items must be unused and in original packaging.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== YOU MAY ALSO LIKE ===== -->
+<section class="max-w-7xl mx-auto px-6 py-20 border-t border-gp-line">
+  <h2 class="text-[11px] tracking-[.3em] uppercase text-gp-mid mb-12">You May Also Like</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10" id="related-grid"></div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-gp-line">
+  <div class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Shop</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="category.html" class="hover:text-gp transition-colors">New Arrivals</a></li>
+        <li><a href="category.html?cat=beauty" class="hover:text-gp transition-colors">Beauty</a></li>
+        <li><a href="category.html?cat=fashion" class="hover:text-gp transition-colors">Fashion</a></li>
+        <li><a href="category.html?cat=wellness" class="hover:text-gp transition-colors">Wellness</a></li>
+        <li><a href="category.html?cat=home" class="hover:text-gp transition-colors">Home</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">About</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Our Story</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Careers</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Support</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Contact Us</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">FAQ</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Shipping &amp; Returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Connect</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Instagram</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Twitter / X</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Pinterest</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-gp-line">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-gp-mid">
+      <span>&copy; 2026 goop, Inc. All rights reserved.</span>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-gp transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-gp transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ──────────────────────────────────────────────────────────
+   PRODUCT DATA (same array across all pages)
+   ────────────────────────────────────────────────────────── */
+const products = [
+  { id: 1, name: "GOOPGLOW Morning Skin Superpowder",    brand: "goop Beauty", price: 60,  category: "beauty",   image: "https://placehold.co/600x600/ede7df/1a1a1a?text=Product+1",
+    desc: "A daily morning drink mix with a potent blend of five key vitamins and antioxidants that helps boost skin luminosity while combating oxidative stress caused by free radicals." },
+  { id: 2, name: "G.Tox Malachite + AHA Exfoliator",     brand: "goop Body",   price: 55,  category: "beauty",   image: "https://placehold.co/600x600/e0dcd5/1a1a1a?text=Product+2",
+    desc: "A detoxifying body exfoliator powered by malachite extract and alpha-hydroxy acids that gently buffs away dead skin cells for silky-smooth, glowing skin." },
+  { id: 3, name: "Luminous Melting Cleanser",             brand: "goop Beauty", price: 58,  category: "beauty",   image: "https://placehold.co/600x600/d8d4cd/1a1a1a?text=Product+3",
+    desc: "A rich, balm-to-oil cleanser that melts away makeup, sunscreen, and impurities without stripping the skin's natural moisture barrier." },
+  { id: 4, name: "Cashmere Wrap Cardigan",                brand: "G. Label",    price: 595, category: "fashion",  image: "https://placehold.co/600x600/d5d0c9/1a1a1a?text=Product+4",
+    desc: "An oversized wrap cardigan crafted from ultra-soft Mongolian cashmere. The relaxed silhouette and ribbed trim make it an effortless layering piece for every season." },
+  { id: 5, name: "The Resort Linen Shirt",                brand: "G. Label",    price: 325, category: "fashion",  image: "https://placehold.co/600x600/dedad3/1a1a1a?text=Product+5",
+    desc: "A breezy, oversized linen button-down designed with a relaxed collar and chest pocket. Equally at home over a swimsuit or paired with tailored trousers." },
+  { id: 6, name: "24K Gold Body Butter",                  brand: "goop Body",   price: 48,  category: "wellness", image: "https://placehold.co/600x600/e3dfd8/1a1a1a?text=Product+6",
+    desc: "A deeply nourishing whipped body butter enriched with 24-karat gold leaf, shea butter, and coconut oil that leaves skin luminous and hydrated all day." },
+  { id: 7, name: "Himalayan Salt Scalp Scrub Shampoo",    brand: "goop Beauty", price: 42,  category: "beauty",   image: "https://placehold.co/600x600/dad6cf/1a1a1a?text=Product+7",
+    desc: "A purifying scalp scrub with pink Himalayan salt, tea tree, and charcoal that removes buildup, soothes itchiness, and leaves hair feeling weightless and fresh." },
+  { id: 8, name: "Edition 04 — Orchard Candle",           brand: "goop Home",   price: 72,  category: "home",     image: "https://placehold.co/600x600/e8e4dd/1a1a1a?text=Product+8",
+    desc: "Hand-poured with a coconut-beeswax blend and scented with notes of bergamot, fig leaf, and cedarwood. Burns for approximately 60 hours." },
+];
+
+/* ──────────────────────────────────────────────────────────
+   CART UTILITIES (same across all pages)
+   ────────────────────────────────────────────────────────── */
+function getCart()        { return JSON.parse(localStorage.getItem('goopCart') || '[]'); }
+function saveCart(c)      { localStorage.setItem('goopCart', JSON.stringify(c)); updateBadge(); }
+function addToCart(id, qty = 1) {
+  const c = getCart();
+  const i = c.findIndex(x => x.id === id);
+  if (i > -1) c[i].qty += qty; else c.push({ id, qty });
+  saveCart(c);
+}
+function removeFromCart(id) { saveCart(getCart().filter(x => x.id !== id)); }
+function updateBadge() {
+  const b = document.getElementById('cart-count');
+  if (!b) return;
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  if (total > 0) { b.textContent = total; b.classList.remove('hidden'); b.classList.add('flex'); }
+  else { b.classList.add('hidden'); b.classList.remove('flex'); }
+}
+function getProduct(id) { return products.find(p => p.id === id); }
+
+/* ──────────────────────────────────────────────────────────
+   GET PRODUCT ID FROM URL
+   Reads ?id=3 from the URL to know which product to show.
+   Falls back to product 1 if missing.
+   ────────────────────────────────────────────────────────── */
+const urlParams = new URLSearchParams(window.location.search);
+const productId = parseInt(urlParams.get('id')) || 1;
+const product   = getProduct(productId) || products[0];
+
+/* ──────────────────────────────────────────────────────────
+   POPULATE PRODUCT DETAILS
+   Fills in name, brand, price, description, images, etc.
+   ────────────────────────────────────────────────────────── */
+document.title = `GOOP – ${product.name}`;
+document.getElementById('breadcrumb-product').textContent = product.name;
+document.getElementById('product-brand').textContent = product.brand;
+document.getElementById('product-name').textContent  = product.name;
+document.getElementById('product-price').textContent = `$${product.price}`;
+document.getElementById('product-desc').textContent  = product.desc || '';
+
+// Main image
+const mainImg = document.getElementById('main-image');
+mainImg.src = product.image;
+mainImg.alt = product.name;
+
+/* ──────────────────────────────────────────────────────────
+   THUMBNAIL GALLERY
+   Creates 4 thumbnail variants using slightly different
+   placeholder colors. When API is connected, these will be
+   separate product image URLs from the response.
+   ────────────────────────────────────────────────────────── */
+const thumbColors = ['ede7df','e0dcd5','d8d4cd','d5d0c9'];
+const thumbWrap   = document.getElementById('thumbnails');
+
+thumbColors.forEach((color, i) => {
+  const url = `https://placehold.co/150x150/${color}/1a1a1a?text=View+${i + 1}`;
+  const img = document.createElement('img');
+  img.src = i === 0 ? product.image : url;
+  img.alt = `${product.name} view ${i + 1}`;
+  img.className = `w-16 h-16 md:w-20 md:h-20 object-cover rounded-sm cursor-pointer border border-transparent hover:border-gp-mid transition-all ${i === 0 ? 'thumb-active' : ''}`;
+
+  // Click thumbnail to update main image
+  img.addEventListener('click', () => {
+    mainImg.src = img.src;
+    thumbWrap.querySelectorAll('img').forEach(t => t.classList.remove('thumb-active'));
+    img.classList.add('thumb-active');
+  });
+
+  thumbWrap.appendChild(img);
+});
+
+/* ──────────────────────────────────────────────────────────
+   STAR RATING (static 4.5 / 5 for demo)
+   ────────────────────────────────────────────────────────── */
+const starsEl = document.getElementById('stars');
+for (let i = 1; i <= 5; i++) {
+  const full = i <= 4;
+  const half = i === 5;
+  starsEl.innerHTML += `
+    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="${full ? '#1a1a1a' : 'none'}" stroke="#1a1a1a" stroke-width="1">
+      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+    </svg>`;
+}
+
+/* ──────────────────────────────────────────────────────────
+   QUANTITY SELECTOR
+   ────────────────────────────────────────────────────────── */
+let qty = 1;
+const qtyDisplay = document.getElementById('qty-display');
+
+document.getElementById('qty-minus').addEventListener('click', () => {
+  if (qty > 1) { qty--; qtyDisplay.textContent = qty; }
+});
+document.getElementById('qty-plus').addEventListener('click', () => {
+  if (qty < 10) { qty++; qtyDisplay.textContent = qty; }
+});
+
+/* ──────────────────────────────────────────────────────────
+   ADD TO BAG
+   Adds current product × selected quantity to cart,
+   updates the badge, and shows a confirmation toast.
+   ────────────────────────────────────────────────────────── */
+document.getElementById('add-to-bag').addEventListener('click', () => {
+  addToCart(product.id, qty);
+  showToast(`${product.name} (×${qty}) added to bag`);
+
+  // Brief button feedback
+  const btn = document.getElementById('add-to-bag');
+  btn.textContent = 'Added ✓';
+  btn.classList.add('bg-green-800');
+  setTimeout(() => {
+    btn.textContent = 'Add to Bag';
+    btn.classList.remove('bg-green-800');
+  }, 1500);
+});
+
+/* ──────────────────────────────────────────────────────────
+   TOAST NOTIFICATION
+   ────────────────────────────────────────────────────────── */
+function showToast(msg) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'toast';
+  toast.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-gp text-white px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg transition-opacity duration-300';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+  setTimeout(() => { toast.remove(); }, 2500);
+}
+
+/* ──────────────────────────────────────────────────────────
+   ACCORDION TOGGLES
+   Details / Ingredients / Shipping sections expand/collapse.
+   ────────────────────────────────────────────────────────── */
+document.querySelectorAll('.acc-toggle').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const targetId = btn.dataset.target;
+    const body     = document.getElementById(targetId);
+    const icon     = btn.querySelector('.acc-icon');
+
+    body.classList.toggle('open');
+    icon.classList.toggle('open');
+  });
+});
+
+/* ──────────────────────────────────────────────────────────
+   RELATED PRODUCTS
+   Shows 4 products from the same category, excluding the
+   current one. Falls back to random products if not enough.
+   ────────────────────────────────────────────────────────── */
+const relatedGrid = document.getElementById('related-grid');
+let related = products.filter(p => p.category === product.category && p.id !== product.id);
+
+// If fewer than 4, fill with other random products
+if (related.length < 4) {
+  const extras = products.filter(p => p.id !== product.id && !related.includes(p));
+  related = [...related, ...extras].slice(0, 4);
+}
+related = related.slice(0, 4);
+
+related.forEach(p => {
+  relatedGrid.innerHTML += `
+    <a href="product.html?id=${p.id}" class="pc group">
+      <div class="aspect-square bg-gp-lt overflow-hidden mb-3 rounded-sm">
+        <img src="${p.image}" alt="${p.name}" class="ci w-full h-full object-cover" />
+      </div>
+      <p class="text-[11px] text-gp-mid tracking-wide mb-1">${p.brand}</p>
+      <h3 class="text-[13px] leading-snug mb-1 group-hover:underline">${p.name}</h3>
+      <p class="text-[13px]">$${p.price}</p>
+    </a>`;
+});
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE MENU + INIT
+   ────────────────────────────────────────────────────────── */
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('mob-menu').classList.toggle('hidden');
+});
+
+updateBadge();
+</script>
+</body>
+</html>

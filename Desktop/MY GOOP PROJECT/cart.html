@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP – Shopping Bag</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+          },
+          fontFamily: {
+            serif: ['"Times New Roman"','Georgia','serif'],
+            sans:  ['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nl { position: relative; }
+    .nl::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: #1a1a1a; transition: width .3s;
+    }
+    .nl:hover::after { width: 100%; }
+    /* Fade-out animation for removed cart items */
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(20px); }
+    }
+    .fade-out { animation: fadeOut .3s ease-out forwards; }
+    /* Slide-in animation for cart items on load */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .slide-in { animation: slideIn .4s ease-out both; }
+  </style>
+</head>
+<body class="bg-white text-gp font-sans">
+
+<!-- ===== ANNOUNCEMENT BAR ===== -->
+<div class="bg-gp text-white text-center py-2.5 text-[11px] tracking-[.22em] uppercase">
+  Complimentary shipping on orders over $50 &ensp;|&ensp; New arrivals weekly
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<header class="border-b border-gp-line sticky top-0 bg-white/95 backdrop-blur z-50">
+  <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <div class="hidden md:flex gap-8">
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Shop</a>
+      <a href="category.html?cat=beauty" class="nl text-[11px] tracking-[.2em] uppercase">Beauty</a>
+      <a href="category.html?cat=fashion" class="nl text-[11px] tracking-[.2em] uppercase">Fashion</a>
+      <a href="category.html?cat=wellness" class="nl text-[11px] tracking-[.2em] uppercase">Wellness</a>
+    </div>
+    <a href="index.html" class="text-[26px] md:text-[30px] tracking-[.35em] uppercase font-serif font-bold select-none">goop</a>
+    <div class="flex items-center gap-5">
+      <button aria-label="Search" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+      </button>
+      <a href="auth.html" aria-label="Account" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+      </a>
+      <a href="cart.html" class="relative hover:opacity-50 transition-opacity" aria-label="Cart">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        <span id="cart-count" class="hidden absolute -top-2 -right-2 bg-gp text-white text-[9px] min-w-[16px] h-4 rounded-full items-center justify-center"></span>
+      </a>
+      <button id="menu-btn" class="md:hidden hover:opacity-50" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+    </div>
+  </nav>
+  <div id="mob-menu" class="hidden md:hidden border-t border-gp-line px-6 py-5 space-y-4 bg-white">
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Shop All</a>
+    <a href="category.html?cat=beauty" class="block text-[11px] tracking-[.2em] uppercase">Beauty</a>
+    <a href="category.html?cat=fashion" class="block text-[11px] tracking-[.2em] uppercase">Fashion</a>
+    <a href="category.html?cat=wellness" class="block text-[11px] tracking-[.2em] uppercase">Wellness</a>
+  </div>
+</header>
+
+<!-- ===== BREADCRUMB ===== -->
+<div class="max-w-7xl mx-auto px-6 py-4">
+  <nav class="text-[11px] text-gp-mid tracking-wide">
+    <a href="index.html" class="hover:text-gp transition-colors">Home</a>
+    <span class="mx-2">/</span>
+    <span class="text-gp">Shopping Bag</span>
+  </nav>
+</div>
+
+<!-- ===== PAGE TITLE ===== -->
+<section class="max-w-7xl mx-auto px-6 pb-4">
+  <h1 class="text-3xl md:text-4xl font-serif">Your Bag</h1>
+  <p class="text-sm text-gp-mid mt-2" id="cart-summary-text"></p>
+</section>
+
+<!-- ===== CART CONTENT ===== -->
+<section class="max-w-7xl mx-auto px-6 pb-20">
+
+  <!-- ── CART WITH ITEMS (shown when cart has items) ── -->
+  <div id="cart-filled" class="hidden">
+    <div class="grid lg:grid-cols-3 gap-10 lg:gap-16">
+
+      <!-- LEFT COLUMN: Cart Items List (takes 2/3 width on desktop) -->
+      <div class="lg:col-span-2">
+
+        <!-- Table header (desktop) -->
+        <div class="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center pb-4 border-b border-gp-line text-[11px] tracking-[.15em] uppercase text-gp-mid">
+          <span>Product</span>
+          <span class="text-center">Price</span>
+          <span class="text-center">Quantity</span>
+          <span class="text-right">Total</span>
+          <span class="w-8"></span>
+        </div>
+
+        <!-- Cart items container (populated by JS) -->
+        <div id="cart-items"></div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Order Summary (takes 1/3 width on desktop) -->
+      <div class="lg:col-span-1">
+        <div class="bg-gp-lt p-6 md:p-8 rounded-sm sticky top-24">
+          <h2 class="text-[11px] tracking-[.2em] uppercase font-semibold mb-6">Order Summary</h2>
+
+          <!-- Subtotal -->
+          <div class="flex justify-between text-sm mb-3">
+            <span class="text-gp-mid">Subtotal</span>
+            <span id="summary-subtotal">$0.00</span>
+          </div>
+
+          <!-- Shipping -->
+          <div class="flex justify-between text-sm mb-3">
+            <span class="text-gp-mid">Shipping</span>
+            <span id="summary-shipping" class="text-green-700">Complimentary</span>
+          </div>
+
+          <!-- Estimated Tax -->
+          <div class="flex justify-between text-sm mb-6">
+            <span class="text-gp-mid">Estimated Tax</span>
+            <span id="summary-tax">$0.00</span>
+          </div>
+
+          <!-- Promo Code -->
+          <div class="mb-6">
+            <button id="promo-toggle" class="text-[11px] tracking-[.15em] uppercase text-gp-mid hover:text-gp transition-colors flex items-center gap-1">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+              Add promo code
+            </button>
+            <div id="promo-field" class="hidden mt-3 flex gap-2">
+              <input type="text" id="promo-input" placeholder="Enter code" class="flex-1 px-3 py-2 border border-gp-line bg-white text-sm focus:outline-none focus:border-gp transition-colors" />
+              <button id="promo-apply" class="px-4 py-2 bg-gp text-white text-[10px] tracking-[.15em] uppercase hover:bg-gp/85 transition-colors">Apply</button>
+            </div>
+            <p id="promo-msg" class="hidden mt-2 text-[11px]"></p>
+          </div>
+
+          <!-- Divider -->
+          <div class="border-t border-gp-line pt-4 mb-6">
+            <div class="flex justify-between text-base font-semibold">
+              <span>Estimated Total</span>
+              <span id="summary-total">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Checkout Button -->
+          <button id="checkout-btn" onclick="window.location.href='auth.html'" class="w-full py-4 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors mb-3">
+            Proceed to Checkout
+          </button>
+
+          <!-- Continue Shopping -->
+          <a href="category.html" class="block text-center text-[11px] tracking-[.15em] uppercase text-gp-mid hover:text-gp transition-colors py-2">
+            Continue Shopping
+          </a>
+
+          <!-- Trust badges -->
+          <div class="mt-6 pt-4 border-t border-gp-line flex flex-col gap-3">
+            <div class="flex items-center gap-2 text-[11px] text-gp-mid">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+              Secure checkout with SSL encryption
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-gp-mid">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0H6.375c-.621 0-1.125-.504-1.125-1.125V14.25m17.25 0V6.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v7.875m17.25 0h.375a1.125 1.125 0 001.125-1.125V11.25a1.125 1.125 0 00-1.125-1.125h-.375"/></svg>
+              Free shipping on orders over $50
+            </div>
+            <div class="flex items-center gap-2 text-[11px] text-gp-mid">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+              30-day hassle-free returns
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EMPTY CART (shown when no items) ── -->
+  <div id="cart-empty" class="hidden text-center py-24">
+    <!-- Empty bag illustration -->
+    <div class="w-24 h-24 mx-auto mb-8 rounded-full bg-gp-lt flex items-center justify-center">
+      <svg class="w-10 h-10 text-gp-mid" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif mb-3">Your bag is empty</h2>
+    <p class="text-sm text-gp-mid mb-8 max-w-sm mx-auto">Looks like you haven't added anything yet. Explore our collections to find something you'll love.</p>
+    <a href="category.html" class="inline-block border border-gp px-10 py-3.5 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-300">
+      Start Shopping
+    </a>
+  </div>
+
+</section>
+
+<!-- ===== RECENTLY VIEWED / RECOMMENDATIONS ===== -->
+<section id="recommendations" class="hidden max-w-7xl mx-auto px-6 py-20 border-t border-gp-line">
+  <h2 class="text-[11px] tracking-[.3em] uppercase text-gp-mid mb-12">You Might Also Like</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10" id="rec-grid"></div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-gp-line">
+  <div class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Shop</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="category.html" class="hover:text-gp transition-colors">New Arrivals</a></li>
+        <li><a href="category.html?cat=beauty" class="hover:text-gp transition-colors">Beauty</a></li>
+        <li><a href="category.html?cat=fashion" class="hover:text-gp transition-colors">Fashion</a></li>
+        <li><a href="category.html?cat=wellness" class="hover:text-gp transition-colors">Wellness</a></li>
+        <li><a href="category.html?cat=home" class="hover:text-gp transition-colors">Home</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">About</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Our Story</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Careers</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Support</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Contact Us</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">FAQ</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Shipping &amp; Returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Connect</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Instagram</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Twitter / X</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Pinterest</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-gp-line">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-gp-mid">
+      <span>&copy; 2026 goop, Inc. All rights reserved.</span>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-gp transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-gp transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ──────────────────────────────────────────────────────────
+   PRODUCT DATA (same array across all pages)
+   ────────────────────────────────────────────────────────── */
+const products = [
+  { id: 1, name: "GOOPGLOW Morning Skin Superpowder",    brand: "goop Beauty", price: 60,  category: "beauty",   image: "https://placehold.co/600x600/ede7df/1a1a1a?text=Product+1" },
+  { id: 2, name: "G.Tox Malachite + AHA Exfoliator",     brand: "goop Body",   price: 55,  category: "beauty",   image: "https://placehold.co/600x600/e0dcd5/1a1a1a?text=Product+2" },
+  { id: 3, name: "Luminous Melting Cleanser",             brand: "goop Beauty", price: 58,  category: "beauty",   image: "https://placehold.co/600x600/d8d4cd/1a1a1a?text=Product+3" },
+  { id: 4, name: "Cashmere Wrap Cardigan",                brand: "G. Label",    price: 595, category: "fashion",  image: "https://placehold.co/600x600/d5d0c9/1a1a1a?text=Product+4" },
+  { id: 5, name: "The Resort Linen Shirt",                brand: "G. Label",    price: 325, category: "fashion",  image: "https://placehold.co/600x600/dedad3/1a1a1a?text=Product+5" },
+  { id: 6, name: "24K Gold Body Butter",                  brand: "goop Body",   price: 48,  category: "wellness", image: "https://placehold.co/600x600/e3dfd8/1a1a1a?text=Product+6" },
+  { id: 7, name: "Himalayan Salt Scalp Scrub Shampoo",    brand: "goop Beauty", price: 42,  category: "beauty",   image: "https://placehold.co/600x600/dad6cf/1a1a1a?text=Product+7" },
+  { id: 8, name: "Edition 04 — Orchard Candle",           brand: "goop Home",   price: 72,  category: "home",     image: "https://placehold.co/600x600/e8e4dd/1a1a1a?text=Product+8" },
+];
+
+/* ──────────────────────────────────────────────────────────
+   CART UTILITIES (same across all pages)
+   ────────────────────────────────────────────────────────── */
+function getCart()        { return JSON.parse(localStorage.getItem('goopCart') || '[]'); }
+function saveCart(c)      { localStorage.setItem('goopCart', JSON.stringify(c)); updateBadge(); }
+function addToCart(id, qty = 1) {
+  const c = getCart();
+  const i = c.findIndex(x => x.id === id);
+  if (i > -1) c[i].qty += qty; else c.push({ id, qty });
+  saveCart(c);
+}
+function removeFromCart(id) { saveCart(getCart().filter(x => x.id !== id)); }
+function updateBadge() {
+  const b = document.getElementById('cart-count');
+  if (!b) return;
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  if (total > 0) { b.textContent = total; b.classList.remove('hidden'); b.classList.add('flex'); }
+  else { b.classList.add('hidden'); b.classList.remove('flex'); }
+}
+function getProduct(id) { return products.find(p => p.id === id); }
+
+/* ──────────────────────────────────────────────────────────
+   PROMO CODE STATE
+   Stores whether a valid promo has been applied.
+   'GOOP10' gives 10% off, 'GOOP20' gives 20% off.
+   ────────────────────────────────────────────────────────── */
+let promoDiscount = 0;   // percentage discount (0–100)
+let promoCode     = '';   // the applied code string
+
+const validPromos = {
+  'GOOP10': 10,
+  'GOOP20': 20,
+  'FREESHIP': 0,  // just free shipping (already free, but valid code)
+};
+
+/* ──────────────────────────────────────────────────────────
+   RENDER CART
+   Main rendering function. Reads localStorage, builds
+   the item rows, calculates totals, and toggles between
+   filled/empty states.
+   ────────────────────────────────────────────────────────── */
+function renderCart() {
+  const cart        = getCart();
+  const filledEl    = document.getElementById('cart-filled');
+  const emptyEl     = document.getElementById('cart-empty');
+  const itemsEl     = document.getElementById('cart-items');
+  const summaryText = document.getElementById('cart-summary-text');
+  const recSection  = document.getElementById('recommendations');
+
+  // ── EMPTY STATE ──
+  if (cart.length === 0) {
+    filledEl.classList.add('hidden');
+    emptyEl.classList.remove('hidden');
+    summaryText.textContent = '';
+    showRecommendations();
+    return;
+  }
+
+  // ── FILLED STATE ──
+  filledEl.classList.remove('hidden');
+  emptyEl.classList.add('hidden');
+
+  // Total item count for header text
+  const totalItems = cart.reduce((s, i) => s + i.qty, 0);
+  summaryText.textContent = `${totalItems} item${totalItems !== 1 ? 's' : ''} in your bag`;
+
+  // Build each cart item row
+  itemsEl.innerHTML = '';
+  let subtotal = 0;
+
+  cart.forEach((item, index) => {
+    const product = getProduct(item.id);
+    if (!product) return; // skip if product not found
+
+    const lineTotal = product.price * item.qty;
+    subtotal += lineTotal;
+
+    const row = document.createElement('div');
+    row.id = `cart-item-${item.id}`;
+    row.className = 'slide-in';
+    row.style.animationDelay = `${index * 0.08}s`;
+
+    row.innerHTML = `
+      <!-- MOBILE LAYOUT -->
+      <div class="md:hidden flex gap-4 py-6 border-b border-gp-line">
+        <!-- Product thumbnail -->
+        <a href="product.html?id=${product.id}" class="shrink-0">
+          <div class="w-24 h-24 bg-gp-lt rounded-sm overflow-hidden">
+            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" />
+          </div>
+        </a>
+        <!-- Product info -->
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start gap-2">
+            <div>
+              <p class="text-[10px] text-gp-mid tracking-wide">${product.brand}</p>
+              <a href="product.html?id=${product.id}" class="text-sm leading-snug hover:underline line-clamp-2">${product.name}</a>
+            </div>
+            <!-- Remove button -->
+            <button onclick="handleRemove(${item.id})" class="shrink-0 p-1 hover:opacity-50 transition-opacity" aria-label="Remove item">
+              <svg class="w-4 h-4 text-gp-mid" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <!-- Price + Quantity row -->
+          <div class="flex items-center justify-between mt-3">
+            <div class="flex items-center border border-gp-line">
+              <button onclick="changeQty(${item.id}, -1)" class="w-8 h-8 flex items-center justify-center text-sm hover:bg-gp-lt transition-colors">−</button>
+              <span class="w-8 h-8 flex items-center justify-center text-xs border-x border-gp-line">${item.qty}</span>
+              <button onclick="changeQty(${item.id}, 1)" class="w-8 h-8 flex items-center justify-center text-sm hover:bg-gp-lt transition-colors">+</button>
+            </div>
+            <span class="text-sm font-medium">$${lineTotal.toFixed(2)}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESKTOP LAYOUT (table-like row) -->
+      <div class="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center py-6 border-b border-gp-line">
+        <!-- Product cell -->
+        <div class="flex items-center gap-4">
+          <a href="product.html?id=${product.id}" class="shrink-0">
+            <div class="w-20 h-20 bg-gp-lt rounded-sm overflow-hidden">
+              <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover" />
+            </div>
+          </a>
+          <div>
+            <p class="text-[10px] text-gp-mid tracking-wide mb-0.5">${product.brand}</p>
+            <a href="product.html?id=${product.id}" class="text-sm leading-snug hover:underline">${product.name}</a>
+          </div>
+        </div>
+        <!-- Price cell -->
+        <div class="text-center text-sm">$${product.price.toFixed(2)}</div>
+        <!-- Quantity cell -->
+        <div class="flex justify-center">
+          <div class="flex items-center border border-gp-line">
+            <button onclick="changeQty(${item.id}, -1)" class="w-8 h-8 flex items-center justify-center text-sm hover:bg-gp-lt transition-colors">−</button>
+            <span class="w-10 h-8 flex items-center justify-center text-xs border-x border-gp-line">${item.qty}</span>
+            <button onclick="changeQty(${item.id}, 1)" class="w-8 h-8 flex items-center justify-center text-sm hover:bg-gp-lt transition-colors">+</button>
+          </div>
+        </div>
+        <!-- Line total cell -->
+        <div class="text-right text-sm font-medium">$${lineTotal.toFixed(2)}</div>
+        <!-- Remove cell -->
+        <button onclick="handleRemove(${item.id})" class="w-8 h-8 flex items-center justify-center hover:opacity-50 transition-opacity" aria-label="Remove item">
+          <svg class="w-4 h-4 text-gp-mid" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    `;
+
+    itemsEl.appendChild(row);
+  });
+
+  // ── CALCULATE TOTALS ──
+  updateSummary(subtotal);
+  showRecommendations();
+}
+
+/* ──────────────────────────────────────────────────────────
+   UPDATE ORDER SUMMARY
+   Recalculates subtotal, shipping, tax, discount, total.
+   ────────────────────────────────────────────────────────── */
+function updateSummary(subtotal) {
+  // Shipping: free over $50, else $5.95
+  const shipping    = subtotal >= 50 ? 0 : 5.95;
+  const shippingEl  = document.getElementById('summary-shipping');
+  shippingEl.textContent = shipping === 0 ? 'Complimentary' : `$${shipping.toFixed(2)}`;
+  shippingEl.className   = shipping === 0 ? 'text-green-700' : '';
+
+  // Apply promo discount
+  const discountAmt = subtotal * (promoDiscount / 100);
+  const afterDiscount = subtotal - discountAmt;
+
+  // Tax estimate (8.875% — NYC rate as a demo)
+  const taxRate = 0.08875;
+  const tax     = afterDiscount * taxRate;
+  const total   = afterDiscount + shipping + tax;
+
+  document.getElementById('summary-subtotal').textContent = `$${subtotal.toFixed(2)}`;
+  document.getElementById('summary-tax').textContent      = `$${tax.toFixed(2)}`;
+  document.getElementById('summary-total').textContent    = `$${total.toFixed(2)}`;
+
+  // Show/hide discount row
+  let discountRow = document.getElementById('summary-discount-row');
+  if (promoDiscount > 0) {
+    if (!discountRow) {
+      // Create discount row dynamically (insert before tax row)
+      const taxRow = document.getElementById('summary-tax').parentElement;
+      discountRow = document.createElement('div');
+      discountRow.id = 'summary-discount-row';
+      discountRow.className = 'flex justify-between text-sm mb-3';
+      taxRow.parentElement.insertBefore(discountRow, taxRow);
+    }
+    discountRow.innerHTML = `
+      <span class="text-green-700">Discount (${promoCode})</span>
+      <span class="text-green-700">−$${discountAmt.toFixed(2)}</span>
+    `;
+  } else if (discountRow) {
+    discountRow.remove();
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   CHANGE QUANTITY
+   Increments or decrements the quantity of a cart item.
+   If quantity hits 0, removes the item entirely.
+   ────────────────────────────────────────────────────────── */
+function changeQty(productId, delta) {
+  const cart = getCart();
+  const idx  = cart.findIndex(x => x.id === productId);
+  if (idx === -1) return;
+
+  cart[idx].qty += delta;
+
+  // Remove if quantity drops to 0 or below
+  if (cart[idx].qty <= 0) {
+    handleRemove(productId);
+    return;
+  }
+
+  // Cap at 10 max
+  if (cart[idx].qty > 10) cart[idx].qty = 10;
+
+  saveCart(cart);
+  renderCart();
+}
+
+/* ──────────────────────────────────────────────────────────
+   REMOVE ITEM
+   Animates the item out, removes from cart, re-renders.
+   ────────────────────────────────────────────────────────── */
+function handleRemove(productId) {
+  const row = document.getElementById(`cart-item-${productId}`);
+  if (row) {
+    row.classList.add('fade-out');
+    row.addEventListener('animationend', () => {
+      removeFromCart(productId);
+      renderCart();
+    });
+  } else {
+    removeFromCart(productId);
+    renderCart();
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   PROMO CODE LOGIC
+   Toggle field visibility, validate codes, apply discount.
+   ────────────────────────────────────────────────────────── */
+document.getElementById('promo-toggle').addEventListener('click', () => {
+  const field = document.getElementById('promo-field');
+  field.classList.toggle('hidden');
+  if (!field.classList.contains('hidden')) {
+    document.getElementById('promo-input').focus();
+  }
+});
+
+document.getElementById('promo-apply').addEventListener('click', applyPromo);
+document.getElementById('promo-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') applyPromo();
+});
+
+function applyPromo() {
+  const input  = document.getElementById('promo-input');
+  const msgEl  = document.getElementById('promo-msg');
+  const code   = input.value.trim().toUpperCase();
+
+  if (!code) return;
+
+  if (validPromos.hasOwnProperty(code)) {
+    promoDiscount = validPromos[code];
+    promoCode     = code;
+
+    msgEl.textContent = promoDiscount > 0
+      ? `${code} applied — ${promoDiscount}% off!`
+      : `${code} applied!`;
+    msgEl.className = 'mt-2 text-[11px] text-green-700';
+    msgEl.classList.remove('hidden');
+
+    input.disabled = true;
+    input.classList.add('opacity-50');
+    document.getElementById('promo-apply').textContent = 'Applied ✓';
+    document.getElementById('promo-apply').disabled = true;
+
+    renderCart(); // re-render to update totals
+  } else {
+    promoDiscount = 0;
+    promoCode     = '';
+    msgEl.textContent = 'Invalid promo code. Try GOOP10 or GOOP20.';
+    msgEl.className = 'mt-2 text-[11px] text-red-600';
+    msgEl.classList.remove('hidden');
+    input.focus();
+    input.select();
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   RECOMMENDATIONS
+   Shows products NOT in the cart. Displayed below both
+   filled and empty cart states.
+   ────────────────────────────────────────────────────────── */
+function showRecommendations() {
+  const cart    = getCart();
+  const cartIds = cart.map(i => i.id);
+  const recs    = products.filter(p => !cartIds.includes(p.id)).slice(0, 4);
+  const section = document.getElementById('recommendations');
+  const grid    = document.getElementById('rec-grid');
+
+  if (recs.length === 0) {
+    section.classList.add('hidden');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  grid.innerHTML = recs.map(p => `
+    <a href="product.html?id=${p.id}" class="group">
+      <div class="aspect-square bg-gp-lt overflow-hidden mb-3 rounded-sm">
+        <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
+      </div>
+      <p class="text-[11px] text-gp-mid tracking-wide mb-1">${p.brand}</p>
+      <h3 class="text-[13px] leading-snug mb-1 group-hover:underline">${p.name}</h3>
+      <p class="text-[13px]">$${p.price}</p>
+    </a>
+  `).join('');
+}
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE MENU
+   ────────────────────────────────────────────────────────── */
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('mob-menu').classList.toggle('hidden');
+});
+
+/* ──────────────────────────────────────────────────────────
+   INIT
+   ────────────────────────────────────────────────────────── */
+updateBadge();
+renderCart();
+</script>
+</body>
+</html>

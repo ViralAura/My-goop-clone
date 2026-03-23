@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP – Homepage</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+          },
+          fontFamily: {
+            serif: ['"Times New Roman"','Georgia','serif'],
+            sans:  ['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    /* Underline-on-hover for nav links */
+    .nl { position: relative; }
+    .nl::after {
+      content: ''; position: absolute; bottom: -2px; left: 0;
+      width: 0; height: 1px; background: #1a1a1a; transition: width .3s;
+    }
+    .nl:hover::after { width: 100%; }
+    /* Product card hover zoom */
+    .ci { transition: transform .5s ease; }
+    .pc:hover .ci { transform: scale(1.04); }
+    /* Fade-up entrance animation */
+    @keyframes fu {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu { animation: fu .8s ease-out both; }
+  </style>
+</head>
+<body class="bg-white text-gp font-sans">
+
+<!-- ===== ANNOUNCEMENT BAR ===== -->
+<div class="bg-gp text-white text-center py-2.5 text-[11px] tracking-[.22em] uppercase">
+  Complimentary shipping on orders over $50 &ensp;|&ensp; New arrivals weekly
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<header class="border-b border-gp-line sticky top-0 bg-white/95 backdrop-blur z-50">
+  <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <!-- Left nav links (desktop) -->
+    <div class="hidden md:flex gap-8">
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Shop</a>
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Beauty</a>
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Fashion</a>
+      <a href="category.html" class="nl text-[11px] tracking-[.2em] uppercase">Wellness</a>
+    </div>
+
+    <!-- Center logo -->
+    <a href="index.html" class="text-[26px] md:text-[30px] tracking-[.35em] uppercase font-serif font-bold select-none">goop</a>
+
+    <!-- Right icons -->
+    <div class="flex items-center gap-5">
+      <!-- Search -->
+      <button aria-label="Search" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+        </svg>
+      </button>
+      <!-- Account -->
+      <a href="auth.html" aria-label="Account" class="hover:opacity-50 transition-opacity">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+        </svg>
+      </a>
+      <!-- Cart with badge -->
+      <a href="cart.html" class="relative hover:opacity-50 transition-opacity" aria-label="Cart">
+        <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+        </svg>
+        <span id="cart-count" class="hidden absolute -top-2 -right-2 bg-gp text-white text-[9px] min-w-[16px] h-4 rounded-full items-center justify-center"></span>
+      </a>
+      <!-- Mobile menu button -->
+      <button id="menu-btn" class="md:hidden hover:opacity-50" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile dropdown menu -->
+  <div id="mob-menu" class="hidden md:hidden border-t border-gp-line px-6 py-5 space-y-4 bg-white">
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Shop</a>
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Beauty</a>
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Fashion</a>
+    <a href="category.html" class="block text-[11px] tracking-[.2em] uppercase">Wellness</a>
+  </div>
+</header>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="relative min-h-[75vh] flex items-center bg-gp-cream fu overflow-hidden">
+  <!-- Subtle gradient background (will be replaced with hero image from API) -->
+  <div class="absolute inset-0 bg-gradient-to-r from-[#ede7df] via-[#f5f0eb] to-[#e8e2da]"></div>
+  <div class="relative z-10 max-w-7xl mx-auto px-6 w-full grid md:grid-cols-2 gap-10 items-center py-20">
+    <div>
+      <p class="text-[11px] tracking-[.3em] uppercase text-gp-mid mb-5">The Spring Edit</p>
+      <h1 class="text-[clamp(2.4rem,5vw,4rem)] font-serif leading-[1.1] mb-6">
+        The Clean Living<br>Guide
+      </h1>
+      <p class="text-sm text-gp-mid leading-relaxed max-w-sm mb-8">
+        Everything you need to reset your routine — from clean beauty essentials to everyday wellness rituals.
+      </p>
+      <a href="category.html" class="inline-block border border-gp px-10 py-3.5 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-300">
+        Shop Now
+      </a>
+    </div>
+    <!-- Hero image placeholder -->
+    <div class="hidden md:flex aspect-[3/4] max-h-[520px] bg-[#e0d6cc] rounded-sm overflow-hidden shadow-lg items-center justify-center text-gp-mid/40 text-sm tracking-widest">
+      HERO&nbsp;IMAGE
+    </div>
+  </div>
+</section>
+
+<!-- ===== SHOP BY CATEGORY ===== -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+  <h2 class="text-center text-[11px] tracking-[.3em] uppercase text-gp-mid mb-12">Shop by Category</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="cats"></div>
+</section>
+
+<!-- ===== TRENDING PRODUCTS ===== -->
+<section class="max-w-7xl mx-auto px-6 py-20 border-t border-gp-line">
+  <div class="flex items-center justify-between mb-12">
+    <h2 class="text-[11px] tracking-[.3em] uppercase text-gp-mid">Trending Now</h2>
+    <a href="category.html" class="text-[11px] tracking-[.2em] uppercase nl">View All</a>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10" id="trending"></div>
+</section>
+
+<!-- ===== EDITORIAL SECTION ===== -->
+<section class="max-w-7xl mx-auto px-6 py-20">
+  <div class="grid md:grid-cols-2 gap-8 items-center">
+    <div class="aspect-[4/5] bg-[#e8e0d8] flex items-center justify-center text-gp-mid/40 text-sm tracking-widest rounded-sm">
+      EDITORIAL&nbsp;IMAGE
+    </div>
+    <div class="py-6 md:px-14">
+      <p class="text-[11px] tracking-[.3em] uppercase text-gp-mid mb-4">The Goop Edit</p>
+      <h2 class="text-3xl md:text-[2.6rem] font-serif leading-[1.15] mb-6">Clean Beauty,<br>Elevated</h2>
+      <p class="text-sm text-gp-mid leading-relaxed mb-8">
+        Our editors curated the season's most coveted clean beauty finds — formulas that deliver real results without compromise.
+      </p>
+      <a href="category.html" class="inline-block border border-gp px-10 py-3.5 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-300">
+        Explore the Edit
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== NEWSLETTER ===== -->
+<section class="bg-gp-cream py-24">
+  <div class="max-w-xl mx-auto px-6 text-center">
+    <h2 class="text-2xl md:text-3xl font-serif mb-4">Stay in the Know</h2>
+    <p class="text-sm text-gp-mid mb-8">Sign up for our newsletter for new arrivals, exclusive offers, and wellness insights.</p>
+    <form class="flex flex-col sm:flex-row gap-3" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Subscribed ✓'">
+      <input type="email" required placeholder="Enter your email" class="flex-1 px-4 py-3 border border-gp-line bg-white text-sm placeholder:text-gp-mid/60 focus:outline-none focus:border-gp transition-colors" />
+      <button class="px-8 py-3 bg-gp text-white text-[11px] tracking-[.2em] uppercase hover:bg-gp/85 transition-colors">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="border-t border-gp-line">
+  <div class="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-8">
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Shop</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="category.html" class="hover:text-gp transition-colors">New Arrivals</a></li>
+        <li><a href="category.html" class="hover:text-gp transition-colors">Beauty</a></li>
+        <li><a href="category.html" class="hover:text-gp transition-colors">Fashion</a></li>
+        <li><a href="category.html" class="hover:text-gp transition-colors">Wellness</a></li>
+        <li><a href="category.html" class="hover:text-gp transition-colors">Home</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">About</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Our Story</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Careers</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Press</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Support</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Contact Us</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">FAQ</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Shipping &amp; Returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="text-[11px] tracking-[.15em] uppercase font-semibold mb-4">Connect</h4>
+      <ul class="space-y-2.5 text-sm text-gp-mid">
+        <li><a href="#" class="hover:text-gp transition-colors">Instagram</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Twitter / X</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">Pinterest</a></li>
+        <li><a href="#" class="hover:text-gp transition-colors">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-gp-line">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] text-gp-mid">
+      <span>&copy; 2026 goop, Inc. All rights reserved.</span>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-gp transition-colors">Privacy Policy</a>
+        <a href="#" class="hover:text-gp transition-colors">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ──────────────────────────────────────────────────────────
+   PRODUCT DATA
+   This array acts as your local "database." When your
+   bootcamp gives you the API endpoint, you'll replace
+   this with a fetch() call. The structure will stay the same.
+   ────────────────────────────────────────────────────────── */
+const products = [
+  { id: 1, name: "GOOPGLOW Morning Skin Superpowder",    brand: "goop Beauty", price: 60,  category: "beauty",   image: "https://placehold.co/600x600/ede7df/1a1a1a?text=Product+1" },
+  { id: 2, name: "G.Tox Malachite + AHA Exfoliator",     brand: "goop Body",   price: 55,  category: "beauty",   image: "https://placehold.co/600x600/e0dcd5/1a1a1a?text=Product+2" },
+  { id: 3, name: "Luminous Melting Cleanser",             brand: "goop Beauty", price: 58,  category: "beauty",   image: "https://placehold.co/600x600/d8d4cd/1a1a1a?text=Product+3" },
+  { id: 4, name: "Cashmere Wrap Cardigan",                brand: "G. Label",    price: 595, category: "fashion",  image: "https://placehold.co/600x600/d5d0c9/1a1a1a?text=Product+4" },
+  { id: 5, name: "The Resort Linen Shirt",                brand: "G. Label",    price: 325, category: "fashion",  image: "https://placehold.co/600x600/dedad3/1a1a1a?text=Product+5" },
+  { id: 6, name: "24K Gold Body Butter",                  brand: "goop Body",   price: 48,  category: "wellness", image: "https://placehold.co/600x600/e3dfd8/1a1a1a?text=Product+6" },
+  { id: 7, name: "Himalayan Salt Scalp Scrub Shampoo",    brand: "goop Beauty", price: 42,  category: "beauty",   image: "https://placehold.co/600x600/dad6cf/1a1a1a?text=Product+7" },
+  { id: 8, name: "Edition 04 — Orchard Candle",           brand: "goop Home",   price: 72,  category: "home",     image: "https://placehold.co/600x600/e8e4dd/1a1a1a?text=Product+8" },
+];
+
+/* ──────────────────────────────────────────────────────────
+   CART UTILITIES
+   Cart is stored in localStorage so it persists across
+   all five HTML pages and browser refreshes.
+   These same functions are copy-pasted into every page.
+   ────────────────────────────────────────────────────────── */
+function getCart()        { return JSON.parse(localStorage.getItem('goopCart') || '[]'); }
+function saveCart(c)      { localStorage.setItem('goopCart', JSON.stringify(c)); updateBadge(); }
+function addToCart(id, qty = 1) {
+  const c = getCart();
+  const i = c.findIndex(x => x.id === id);
+  if (i > -1) c[i].qty += qty; else c.push({ id, qty });
+  saveCart(c);
+}
+function removeFromCart(id) { saveCart(getCart().filter(x => x.id !== id)); }
+function updateBadge() {
+  const b = document.getElementById('cart-count');
+  if (!b) return;
+  const total = getCart().reduce((s, i) => s + i.qty, 0);
+  if (total > 0) { b.textContent = total; b.classList.remove('hidden'); b.classList.add('flex'); }
+  else { b.classList.add('hidden'); b.classList.remove('flex'); }
+}
+function getProduct(id) { return products.find(p => p.id === id); }
+
+/* ──────────────────────────────────────────────────────────
+   RENDER CATEGORY CARDS
+   ────────────────────────────────────────────────────────── */
+const catData = [
+  { name: "Beauty",   bg: "#e8e0d8" },
+  { name: "Fashion",  bg: "#d8dde0" },
+  { name: "Wellness", bg: "#e0d8d8" },
+  { name: "Home",     bg: "#d8e0d8" },
+];
+const catsEl = document.getElementById('cats');
+catData.forEach(c => {
+  catsEl.innerHTML += `
+    <a href="category.html?cat=${c.name.toLowerCase()}" class="group relative aspect-[3/4] overflow-hidden rounded-sm" style="background:${c.bg}">
+      <div class="absolute inset-0 flex items-center justify-center text-gp-mid/30 text-xs tracking-[.3em]">${c.name.toUpperCase()}</div>
+      <div class="absolute inset-0 bg-black/5 group-hover:bg-black/15 transition-colors duration-500"></div>
+      <div class="absolute bottom-0 inset-x-0 p-5">
+        <h3 class="text-white text-[11px] tracking-[.2em] uppercase drop-shadow-md">${c.name}</h3>
+      </div>
+    </a>`;
+});
+
+/* ──────────────────────────────────────────────────────────
+   RENDER TRENDING PRODUCTS (first 4 from data)
+   ────────────────────────────────────────────────────────── */
+const trendingEl = document.getElementById('trending');
+products.slice(0, 4).forEach(p => {
+  trendingEl.innerHTML += `
+    <a href="product.html?id=${p.id}" class="pc group">
+      <div class="aspect-square bg-gp-lt overflow-hidden mb-3 rounded-sm">
+        <img src="${p.image}" alt="${p.name}" class="ci w-full h-full object-cover" />
+      </div>
+      <p class="text-[11px] text-gp-mid tracking-wide mb-1">${p.brand}</p>
+      <h3 class="text-[13px] leading-snug mb-1 group-hover:underline">${p.name}</h3>
+      <p class="text-[13px]">$${p.price}</p>
+    </a>`;
+});
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE MENU TOGGLE
+   ────────────────────────────────────────────────────────── */
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('mob-menu').classList.toggle('hidden');
+});
+
+/* ──────────────────────────────────────────────────────────
+   INIT — update cart badge on page load
+   ────────────────────────────────────────────────────────── */
+updateBadge();
+</script>
+</body>
+</html>
