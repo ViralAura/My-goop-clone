@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP Admin – Products</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+            'gp-red':  '#dc2626',
+            'gp-green':'#16a34a',
+          },
+          fontFamily: {
+            serif:['"Times New Roman"','Georgia','serif'],
+            sans:['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 14px; font-size:12px;
+      letter-spacing:.12em; text-transform:uppercase;
+      transition:all .2s; border-radius:2px; cursor:pointer;
+    }
+    .nav-item:hover:not(.nav-active) { background:#f5f5f5; }
+    .nav-active { background:#1a1a1a; color:white; }
+    .goop-input {
+      width:100%; padding:11px 14px; border:1px solid #e5e5e5;
+      background:white; font-size:13px;
+      font-family:Helvetica,Arial,sans-serif;
+      outline:none; transition:border-color .2s;
+    }
+    .goop-input:focus { border-color:#1a1a1a; }
+    .goop-input.error { border-color:#dc2626; }
+    @keyframes fu {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fu { animation:fu .4s ease-out both; }
+    .modal-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,.55);
+      z-index:50; display:flex; align-items:flex-start;
+      justify-content:center; padding:24px 16px;
+      overflow-y:auto;
+    }
+    .table-wrap { overflow-x:auto; }
+    .table-wrap::-webkit-scrollbar { height:4px; }
+    .table-wrap::-webkit-scrollbar-track { background:#f5f5f5; }
+    .table-wrap::-webkit-scrollbar-thumb { background:#e5e5e5; }
+    /* Image tag chips */
+    .img-tag {
+      display:inline-flex; align-items:center; gap:6px;
+      background:#f5f5f5; padding:4px 10px;
+      font-size:11px; border-radius:2px;
+      border:1px solid #e5e5e5;
+    }
+    /* Step indicator */
+    .step { transition:all .3s; }
+    .step.active .step-dot { background:#1a1a1a; }
+    .step.done   .step-dot { background:#16a34a; }
+    .step-dot {
+      width:28px; height:28px; border-radius:50%;
+      border:2px solid #e5e5e5; display:flex;
+      align-items:center; justify-content:center;
+      font-size:11px; font-weight:600;
+      background:white; transition:all .3s;
+    }
+    .step.active .step-dot { border-color:#1a1a1a; color:white; }
+    .step.done   .step-dot { border-color:#16a34a; color:white; }
+    .step-line { flex:1; height:1px; background:#e5e5e5; margin:0 6px; margin-bottom:16px; }
+  </style>
+</head>
+<body class="bg-gp-lt font-sans text-gp">
+
+<div class="flex min-h-screen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="w-64 bg-white border-r border-gp-line flex flex-col fixed top-0 left-0 h-full z-40 transition-transform duration-300">
+    <div class="px-6 py-6 border-b border-gp-line">
+      <a href="index.html" class="text-[22px] tracking-[.35em] uppercase font-serif font-bold">goop</a>
+      <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase mt-1">Admin Portal</p>
+    </div>
+    <div class="px-6 py-5 border-b border-gp-line">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gp flex items-center justify-center text-white text-sm font-semibold" id="merchant-avatar">M</div>
+        <div class="min-w-0">
+          <p class="text-[12px] font-semibold truncate" id="merchant-name">Merchant</p>
+          <p class="text-[10px] text-gp-mid truncate" id="merchant-store">Store</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <a href="admin-dashboard.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+        Dashboard
+      </a>
+      <a href="admin-products.html" class="nav-item nav-active">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        Products
+      </a>
+      <a href="admin-categories.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Categories
+      </a>
+      <a href="admin-orders.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Orders
+      </a>
+      <a href="admin-profile.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        Profile
+      </a>
+      <div class="border-t border-gp-line my-3"></div>
+      <a href="index.html" target="_blank" class="nav-item text-gp-mid">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        View Storefront
+      </a>
+      <button onclick="logout()" class="nav-item w-full text-gp-red hover:bg-red-50">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+        Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <div id="overlay" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1 ml-0 lg:ml-64 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <div class="bg-white border-b border-gp-line px-6 h-16 flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="lg:hidden hover:opacity-60">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <div>
+          <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase">Admin</p>
+          <h2 class="text-sm font-semibold tracking-wide -mt-0.5">Products</h2>
+        </div>
+      </div>
+      <button onclick="openModal()" class="flex items-center gap-2 px-5 py-2.5 bg-gp text-white text-[11px] tracking-[.2em] uppercase hover:bg-gp/85 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Product
+      </button>
+    </div>
+
+    <!-- Page body -->
+    <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+
+      <!-- Header + Search + Filter row -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-serif mb-1">Products</h1>
+          <p class="text-sm text-gp-mid">Manage your product listings, prices, and inventory.</p>
+        </div>
+        <!-- Search + category filter -->
+        <div class="flex gap-3 items-center">
+          <div class="relative">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="Search products…"
+              class="goop-input pl-9 w-52"
+              oninput="filterProducts()"
+            />
+            <svg class="w-4 h-4 text-gp-mid absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          </div>
+          <select id="cat-filter" class="goop-input w-40" onchange="filterProducts()">
+            <option value="">All Categories</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-3 gap-4 mb-8">
+        <div class="bg-white border border-gp-line p-4 rounded-sm text-center">
+          <p class="text-xl font-semibold" id="count-total">—</p>
+          <p class="text-[10px] text-gp-mid tracking-widest uppercase mt-1">Total</p>
+        </div>
+        <div class="bg-white border border-gp-line p-4 rounded-sm text-center">
+          <p class="text-xl font-semibold" id="count-filtered">—</p>
+          <p class="text-[10px] text-gp-mid tracking-widest uppercase mt-1">Showing</p>
+        </div>
+        <div class="bg-white border border-gp-line p-4 rounded-sm text-center">
+          <p class="text-xl font-semibold" id="count-cats">—</p>
+          <p class="text-[10px] text-gp-mid tracking-widest uppercase mt-1">Categories</p>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="page-loading" class="flex flex-col items-center justify-center py-24">
+        <svg class="animate-spin w-8 h-8 text-gp-mid mb-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        </svg>
+        <p class="text-[11px] text-gp-mid tracking-widest uppercase">Loading products…</p>
+      </div>
+
+      <!-- Products table -->
+      <div id="products-wrap" class="hidden bg-white border border-gp-line rounded-sm">
+        <div class="table-wrap">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gp-line bg-gp-lt/50">
+                <th class="text-left px-5 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal">Product</th>
+                <th class="text-left px-4 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal hidden md:table-cell">Category</th>
+                <th class="text-left px-4 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal hidden lg:table-cell">Brand</th>
+                <th class="text-right px-4 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal">Price</th>
+                <th class="text-center px-4 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal hidden sm:table-cell">Stock</th>
+                <th class="text-right px-5 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="products-empty" class="hidden flex flex-col items-center justify-center py-24 text-center">
+        <div class="w-16 h-16 rounded-full bg-gp-lt flex items-center justify-center mb-5">
+          <svg class="w-7 h-7 text-gp-mid" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        </div>
+        <h3 class="text-lg font-serif mb-2" id="empty-title">No products yet</h3>
+        <p class="text-sm text-gp-mid mb-6 max-w-xs" id="empty-desc">Add your first product to start selling.</p>
+        <button onclick="openModal()" id="empty-btn" class="inline-flex items-center gap-2 border border-gp px-8 py-3 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-200">
+          Add First Product
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     ADD PRODUCT MODAL — Multi-step form
+     Step 1: Basic Info   (title, brand, price, qty, category)
+     Step 2: Images       (add multiple image URLs)
+     Step 3: Details      (description, shipping, variations)
+     ============================================================ -->
+<div id="modal" class="hidden modal-backdrop" onclick="handleBackdropClick(event)">
+  <div class="bg-white w-full max-w-2xl shadow-xl my-auto" onclick="event.stopPropagation()">
+
+    <!-- Modal header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gp-line">
+      <h3 class="font-serif text-lg" id="modal-title">Add Product</h3>
+      <button onclick="closeModal()" class="hover:opacity-50 transition-opacity">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="px-6 py-4 border-b border-gp-line">
+      <div class="flex items-center">
+        <div class="step flex flex-col items-center" id="step-ind-1">
+          <div class="step-dot" id="dot-1">1</div>
+          <p class="text-[10px] tracking-wide uppercase mt-1.5 text-gp-mid">Basics</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step flex flex-col items-center" id="step-ind-2">
+          <div class="step-dot" id="dot-2">2</div>
+          <p class="text-[10px] tracking-wide uppercase mt-1.5 text-gp-mid">Images</p>
+        </div>
+        <div class="step-line"></div>
+        <div class="step flex flex-col items-center" id="step-ind-3">
+          <div class="step-dot" id="dot-3">3</div>
+          <p class="text-[10px] tracking-wide uppercase mt-1.5 text-gp-mid">Details</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Error -->
+    <div id="modal-error" class="hidden mx-6 mt-4 p-3 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+      <span id="modal-error-text">Something went wrong.</span>
+    </div>
+
+    <!-- ── STEP 1: BASIC INFO ── -->
+    <div id="step-1" class="p-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <!-- Title -->
+        <div class="md:col-span-2">
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Product Title *</label>
+          <input class="goop-input" type="text" id="p-title" placeholder="e.g. GOOPGLOW Morning Skin Superpowder" />
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-title-err">Title is required.</p>
+        </div>
+
+        <!-- Brand -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Brand</label>
+          <input class="goop-input" type="text" id="p-brand" placeholder="e.g. goop Beauty" />
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Category *</label>
+          <select class="goop-input" id="p-category">
+            <option value="">Select a category</option>
+          </select>
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-cat-err">Please select a category.</p>
+        </div>
+
+        <!-- Price -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Price (₦) *</label>
+          <input class="goop-input" type="number" id="p-price" placeholder="0.00" min="0" step="0.01" />
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-price-err">Valid price required.</p>
+        </div>
+
+        <!-- Quantity -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Stock Quantity *</label>
+          <input class="goop-input" type="number" id="p-qty" placeholder="100" min="0" />
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-qty-err">Quantity is required.</p>
+        </div>
+
+        <!-- Min Qty -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Min Order Qty</label>
+          <input class="goop-input" type="number" id="p-min-qty" placeholder="1" min="1" value="1" />
+        </div>
+
+        <!-- Max Qty -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Max Order Qty</label>
+          <input class="goop-input" type="number" id="p-max-qty" placeholder="10" min="1" value="10" />
+        </div>
+
+        <!-- Currency -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Currency</label>
+          <select class="goop-input" id="p-currency">
+            <option value="NGN">NGN — Nigerian Naira</option>
+            <option value="USD">USD — US Dollar</option>
+            <option value="GBP">GBP — British Pound</option>
+            <option value="EUR">EUR — Euro</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── STEP 2: IMAGES ── -->
+    <div id="step-2" class="hidden p-6">
+      <p class="text-sm text-gp-mid mb-5 leading-relaxed">
+        Add image URLs for your product. The first image will be the main display image.
+        You can add multiple angles or views.
+      </p>
+
+      <!-- Image URL input -->
+      <div class="flex gap-3 mb-4">
+        <input
+          class="goop-input flex-1"
+          type="url"
+          id="img-url-input"
+          placeholder="https://example.com/product-image.jpg"
+        />
+        <button
+          type="button"
+          onclick="addImageUrl()"
+          class="shrink-0 px-5 py-2.5 bg-gp text-white text-[11px] tracking-[.15em] uppercase hover:bg-gp/85 transition-colors"
+        >
+          Add
+        </button>
+      </div>
+      <p class="text-[11px] text-gp-mid mb-5">Press Enter or click Add after each URL.</p>
+
+      <!-- Image URL tags list -->
+      <div id="img-tags" class="flex flex-wrap gap-2 mb-5 min-h-[40px]"></div>
+
+      <!-- Image previews grid -->
+      <div id="img-previews" class="grid grid-cols-3 gap-3"></div>
+
+      <!-- No images state -->
+      <div id="no-images-msg" class="text-center py-8 border-2 border-dashed border-gp-line rounded-sm">
+        <svg class="w-8 h-8 text-gp-mid mx-auto mb-3" fill="none" stroke="currentColor" stroke-width="1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+        <p class="text-[12px] text-gp-mid">No images added yet. Paste a URL above to add product images.</p>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: DETAILS ── -->
+    <div id="step-3" class="hidden p-6">
+      <div class="space-y-5">
+
+        <!-- Description -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Product Description *</label>
+          <textarea class="goop-input resize-none" id="p-desc" rows="4" placeholder="Describe your product — ingredients, benefits, how to use…"></textarea>
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-desc-err">Description is required.</p>
+        </div>
+
+        <!-- Toggles row -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+          <!-- Has Shipment -->
+          <label class="flex items-center gap-3 cursor-pointer p-3 border border-gp-line hover:border-gp transition-colors rounded-sm">
+            <div class="relative">
+              <input type="checkbox" id="p-shipment" class="sr-only peer" checked />
+              <div class="w-9 h-5 bg-gp-line rounded-full peer-checked:bg-gp transition-colors"></div>
+              <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+            </div>
+            <span class="text-[11px] tracking-wide uppercase">Shipping</span>
+          </label>
+
+          <!-- Has Discount -->
+          <label class="flex items-center gap-3 cursor-pointer p-3 border border-gp-line hover:border-gp transition-colors rounded-sm">
+            <div class="relative">
+              <input type="checkbox" id="p-discount" class="sr-only peer" onchange="toggleDiscountFields()" />
+              <div class="w-9 h-5 bg-gp-line rounded-full peer-checked:bg-gp transition-colors"></div>
+              <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+            </div>
+            <span class="text-[11px] tracking-wide uppercase">Discount</span>
+          </label>
+
+          <!-- Has Refund Policy -->
+          <label class="flex items-center gap-3 cursor-pointer p-3 border border-gp-line hover:border-gp transition-colors rounded-sm">
+            <div class="relative">
+              <input type="checkbox" id="p-refund" class="sr-only peer" />
+              <div class="w-9 h-5 bg-gp-line rounded-full peer-checked:bg-gp transition-colors"></div>
+              <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></div>
+            </div>
+            <span class="text-[11px] tracking-wide uppercase">Refund Policy</span>
+          </label>
+
+        </div>
+
+        <!-- Discount fields (shown only when discount is on) -->
+        <div id="discount-fields" class="hidden grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Discount (%)</label>
+            <input class="goop-input" type="number" id="p-discount-val" placeholder="10" min="0" max="100" />
+          </div>
+          <div>
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Discount Expiry</label>
+            <input class="goop-input" type="date" id="p-discount-exp" />
+          </div>
+        </div>
+
+        <!-- Shipping Locations -->
+        <div>
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Shipping Locations</label>
+          <div class="flex gap-3 mb-3">
+            <input class="goop-input flex-1" type="text" id="ship-loc-input" placeholder="e.g. Nigeria, Ghana, Egypt" />
+            <button type="button" onclick="addShipLocation()" class="shrink-0 px-4 py-2.5 border border-gp text-[11px] tracking-[.1em] uppercase hover:bg-gp hover:text-white transition-all">Add</button>
+          </div>
+          <div id="ship-tags" class="flex flex-wrap gap-2 min-h-[28px]"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Modal footer: navigation buttons -->
+    <div class="px-6 py-4 border-t border-gp-line flex items-center justify-between">
+      <!-- Back button (hidden on step 1) -->
+      <button id="back-btn" onclick="prevStep()" class="hidden px-6 py-2.5 border border-gp-line text-[11px] tracking-[.15em] uppercase hover:border-gp transition-colors">
+        ← Back
+      </button>
+      <div id="back-placeholder"></div>
+
+      <!-- Next / Submit button -->
+      <button
+        id="next-btn"
+        onclick="nextStep()"
+        class="px-8 py-2.5 bg-gp text-white text-[11px] tracking-[.2em] uppercase hover:bg-gp/85 transition-colors flex items-center gap-2"
+      >
+        <span id="next-btn-text">Next Step →</span>
+        <svg id="submit-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        </svg>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="hidden modal-backdrop" onclick="if(event.target===this)closeDeleteModal()">
+  <div class="bg-white w-full max-w-sm shadow-xl p-6 my-auto" onclick="event.stopPropagation()">
+    <div class="flex items-start gap-4 mb-6">
+      <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-gp-red" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      </div>
+      <div>
+        <h3 class="font-serif text-lg mb-1">Delete Product?</h3>
+        <p class="text-[12px] text-gp-mid leading-relaxed">
+          Are you sure you want to delete <strong id="delete-product-name">"this product"</strong>? This action cannot be undone.
+        </p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 py-3 border border-gp-line text-[11px] tracking-[.2em] uppercase hover:border-gp transition-colors">Cancel</button>
+      <button id="confirm-delete-btn" class="flex-1 py-3 bg-gp-red text-white text-[11px] tracking-[.2em] uppercase hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+        <span id="delete-btn-text">Delete</span>
+        <svg id="delete-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg text-white"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   API + AUTH GUARD
+   ───────────────────────────────────────────────────────────── */
+const API = 'http://ecommerce.reworkstaging.name.ng/v2';
+
+const merchantData = localStorage.getItem('goopMerchant');
+if (!merchantData) { window.location.href = 'admin-login.html'; }
+const merchant   = JSON.parse(merchantData);
+const merchantId = merchant._id || merchant.id;
+
+const fullName = `${merchant.first_name || ''} ${merchant.last_name || ''}`.trim() || 'Merchant';
+document.getElementById('merchant-name').textContent   = fullName;
+document.getElementById('merchant-store').textContent  = merchant.store_name || 'Store';
+document.getElementById('merchant-avatar').textContent = fullName.charAt(0).toUpperCase();
+
+/* ─────────────────────────────────────────────────────────────
+   STATE
+   ───────────────────────────────────────────────────────────── */
+let allProducts  = [];   // all products from API
+let categories   = [];   // all categories from API
+let imageUrls    = [];   // image URLs for the product being created
+let shipLocations= [];   // shipping locations for the product
+let currentStep  = 1;    // current step in the multi-step form (1,2,3)
+let deletingId   = null; // product id being deleted
+
+/* ─────────────────────────────────────────────────────────────
+   LOAD PAGE DATA
+   Fetches products and categories in parallel.
+   ───────────────────────────────────────────────────────────── */
+async function loadData() {
+  showState('loading');
+  try {
+    const [prodRes, catRes] = await Promise.all([
+      fetch(`${API}/products?merchant_id=${merchantId}`),
+      fetch(`${API}/categories?merchant_id=${merchantId}`),
+    ]);
+
+    const prodData = await prodRes.json();
+    const catData  = await catRes.json();
+
+    allProducts = Array.isArray(prodData) ? prodData : (prodData.data || []);
+    categories  = Array.isArray(catData)  ? catData  : (catData.data  || []);
+
+    // Populate category dropdown in table filter
+    const catFilter = document.getElementById('cat-filter');
+    catFilter.innerHTML = '<option value="">All Categories</option>';
+    categories.forEach(c => {
+      catFilter.innerHTML += `<option value="${c._id||c.id}">${c.name}</option>`;
+    });
+
+    // Populate category dropdown in add product form
+    const pCat = document.getElementById('p-category');
+    pCat.innerHTML = '<option value="">Select a category</option>';
+    categories.forEach(c => {
+      pCat.innerHTML += `<option value="${c._id||c.id}">${c.name}</option>`;
+    });
+
+    // Update stat counters
+    document.getElementById('count-total').textContent    = allProducts.length;
+    document.getElementById('count-cats').textContent     = categories.length;
+    document.getElementById('count-filtered').textContent = allProducts.length;
+
+    renderTable(allProducts);
+
+  } catch(err) {
+    showToast('Failed to load products.', 'error');
+    showState('empty');
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER PRODUCTS TABLE
+   ───────────────────────────────────────────────────────────── */
+function renderTable(products) {
+  if (products.length === 0) {
+    const isFiltered = document.getElementById('search-input').value ||
+                       document.getElementById('cat-filter').value;
+    document.getElementById('empty-title').textContent = isFiltered ? 'No results found' : 'No products yet';
+    document.getElementById('empty-desc').textContent  = isFiltered ? 'Try adjusting your search or filter.' : 'Add your first product to start selling.';
+    document.getElementById('empty-btn').style.display = isFiltered ? 'none' : '';
+    showState('empty');
+    return;
+  }
+
+  showState('table');
+  document.getElementById('count-filtered').textContent = products.length;
+
+  document.getElementById('products-tbody').innerHTML = products.map((p, i) => {
+    // Find category name by id
+    const cat = categories.find(c => (c._id||c.id) === p.category_id);
+    const catName = cat ? cat.name : '—';
+    const thumb   = p.images?.[0] || '';
+
+    return `
+      <tr class="border-b border-gp-line hover:bg-gp-lt/40 transition-colors fu" style="animation-delay:${i*0.03}s">
+        <!-- Product cell -->
+        <td class="px-5 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 bg-gp-lt rounded-sm overflow-hidden shrink-0">
+              <img
+                src="${thumb || 'https://placehold.co/88x88/f5f5f5/8c8c8c?text=P'}"
+                alt="${p.title}"
+                class="w-full h-full object-cover"
+                onerror="this.src='https://placehold.co/88x88/f5f5f5/8c8c8c?text=P'"
+              />
+            </div>
+            <div class="min-w-0">
+              <p class="text-[13px] font-medium truncate max-w-[160px] md:max-w-[220px]">${p.title || 'Untitled'}</p>
+              <p class="text-[10px] text-gp-mid mt-0.5">${p.brand || ''}</p>
+            </div>
+          </div>
+        </td>
+        <!-- Category cell -->
+        <td class="px-4 py-4 hidden md:table-cell">
+          <span class="inline-block px-2.5 py-1 bg-gp-lt text-[10px] tracking-wide uppercase rounded-sm">${catName}</span>
+        </td>
+        <!-- Brand cell -->
+        <td class="px-4 py-4 text-[12px] text-gp-mid hidden lg:table-cell">${p.brand || '—'}</td>
+        <!-- Price cell -->
+        <td class="px-4 py-4 text-right text-[13px] font-medium">
+          ${p.has_discount ? `<span class="line-through text-gp-mid text-[11px] mr-1">₦${Number(p.price).toLocaleString()}</span><span class="text-gp-red">₦${(p.price*(1-p.discount/100)).toLocaleString()}</span>` : `₦${Number(p.price||0).toLocaleString()}`}
+        </td>
+        <!-- Stock cell -->
+        <td class="px-4 py-4 text-center hidden sm:table-cell">
+          <span class="inline-block px-2.5 py-1 text-[10px] rounded-sm ${p.quantity > 10 ? 'bg-green-50 text-green-700' : p.quantity > 0 ? 'bg-yellow-50 text-yellow-700' : 'bg-red-50 text-red-700'}">
+            ${p.quantity > 0 ? p.quantity + ' in stock' : 'Out of stock'}
+          </span>
+        </td>
+        <!-- Actions cell -->
+        <td class="px-5 py-4">
+          <div class="flex items-center justify-end gap-2">
+            <a href="product.html?id=${p._id||p.id}" target="_blank"
+               class="w-8 h-8 flex items-center justify-center border border-gp-line hover:border-gp transition-colors rounded-sm"
+               title="View on storefront">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </a>
+            <button
+              onclick="openDeleteModal('${p._id||p.id}','${(p.title||'').replace(/'/g,"\\'")}')"
+              class="w-8 h-8 flex items-center justify-center border border-gp-line hover:border-gp-red hover:text-gp-red transition-colors rounded-sm"
+              title="Delete product">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SEARCH + FILTER
+   Filters the local allProducts array by search text
+   and/or category. No extra API call needed.
+   ───────────────────────────────────────────────────────────── */
+function filterProducts() {
+  const query  = document.getElementById('search-input').value.toLowerCase().trim();
+  const catId  = document.getElementById('cat-filter').value;
+
+  let filtered = allProducts;
+
+  if (query) {
+    filtered = filtered.filter(p =>
+      (p.title  || '').toLowerCase().includes(query) ||
+      (p.brand  || '').toLowerCase().includes(query) ||
+      (p.descp  || '').toLowerCase().includes(query)
+    );
+  }
+  if (catId) {
+    filtered = filtered.filter(p => p.category_id === catId);
+  }
+
+  document.getElementById('count-filtered').textContent = filtered.length;
+  renderTable(filtered);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE STATE HELPER
+   ───────────────────────────────────────────────────────────── */
+function showState(state) {
+  document.getElementById('page-loading').classList.toggle('hidden',    state !== 'loading');
+  document.getElementById('products-wrap').classList.toggle('hidden',   state !== 'table');
+  document.getElementById('products-empty').classList.toggle('hidden',  state !== 'empty');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MULTI-STEP MODAL NAVIGATION
+   ───────────────────────────────────────────────────────────── */
+function openModal() {
+  currentStep  = 1;
+  imageUrls    = [];
+  shipLocations= [];
+  document.getElementById('modal-title').textContent = 'Add Product';
+  document.getElementById('modal-error').classList.add('hidden');
+
+  // Reset all form fields
+  ['p-title','p-brand','p-price','p-qty','p-min-qty','p-max-qty','p-desc','img-url-input','ship-loc-input'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.getElementById('p-min-qty').value  = '1';
+  document.getElementById('p-max-qty').value  = '10';
+  document.getElementById('p-category').value = '';
+  document.getElementById('p-currency').value = 'NGN';
+  document.getElementById('p-shipment').checked = true;
+  document.getElementById('p-discount').checked = false;
+  document.getElementById('p-refund').checked   = false;
+  document.getElementById('discount-fields').classList.add('hidden');
+  document.getElementById('img-tags').innerHTML    = '';
+  document.getElementById('img-previews').innerHTML= '';
+  document.getElementById('ship-tags').innerHTML   = '';
+  document.getElementById('no-images-msg').classList.remove('hidden');
+
+  // Clear error states
+  document.querySelectorAll('.goop-input').forEach(el => el.classList.remove('error'));
+  document.querySelectorAll('[id$="-err"]').forEach(el => el.classList.add('hidden'));
+
+  goToStep(1);
+  document.getElementById('modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('p-title').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+/* Go to a specific step and update UI */
+function goToStep(step) {
+  currentStep = step;
+
+  // Show/hide step panels
+  [1,2,3].forEach(s => {
+    document.getElementById(`step-${s}`).classList.toggle('hidden', s !== step);
+  });
+
+  // Update step indicators
+  [1,2,3].forEach(s => {
+    const ind = document.getElementById(`step-ind-${s}`);
+    const dot = document.getElementById(`dot-${s}`);
+    ind.classList.remove('active','done');
+    dot.style.background = '';
+    dot.style.borderColor = '';
+    dot.style.color = '';
+
+    if (s === step) {
+      ind.classList.add('active');
+      dot.style.background   = '#1a1a1a';
+      dot.style.borderColor  = '#1a1a1a';
+      dot.style.color        = 'white';
+    } else if (s < step) {
+      ind.classList.add('done');
+      dot.style.background   = '#16a34a';
+      dot.style.borderColor  = '#16a34a';
+      dot.style.color        = 'white';
+      dot.innerHTML          = '✓';
+    }
+  });
+
+  // Update nav buttons
+  const backBtn  = document.getElementById('back-btn');
+  const backPlac = document.getElementById('back-placeholder');
+  const nextTxt  = document.getElementById('next-btn-text');
+
+  if (step === 1) {
+    backBtn.classList.add('hidden');
+    backPlac.classList.remove('hidden');
+  } else {
+    backBtn.classList.remove('hidden');
+    backPlac.classList.add('hidden');
+  }
+
+  nextTxt.textContent = step === 3 ? 'Publish Product' : 'Next Step →';
+}
+
+function prevStep() {
+  if (currentStep > 1) goToStep(currentStep - 1);
+}
+
+/* Validate current step then advance */
+function nextStep() {
+  if (currentStep === 1 && !validateStep1()) return;
+  if (currentStep === 2) { /* images optional — always advance */ }
+  if (currentStep === 3) { submitProduct(); return; }
+  goToStep(currentStep + 1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STEP 1 VALIDATION
+   ───────────────────────────────────────────────────────────── */
+function validateStep1() {
+  let valid = true;
+
+  const title = document.getElementById('p-title').value.trim();
+  const cat   = document.getElementById('p-category').value;
+  const price = parseFloat(document.getElementById('p-price').value);
+  const qty   = parseInt(document.getElementById('p-qty').value);
+
+  // Clear previous errors
+  ['p-title','p-category','p-price','p-qty'].forEach(id => {
+    document.getElementById(id).classList.remove('error');
+  });
+  ['p-title-err','p-cat-err','p-price-err','p-qty-err'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+
+  if (!title)          { document.getElementById('p-title').classList.add('error');    document.getElementById('p-title-err').classList.remove('hidden');  valid = false; }
+  if (!cat)            { document.getElementById('p-category').classList.add('error'); document.getElementById('p-cat-err').classList.remove('hidden');    valid = false; }
+  if (isNaN(price)||price<0) { document.getElementById('p-price').classList.add('error');  document.getElementById('p-price-err').classList.remove('hidden'); valid = false; }
+  if (isNaN(qty)||qty<0)     { document.getElementById('p-qty').classList.add('error');    document.getElementById('p-qty-err').classList.remove('hidden');   valid = false; }
+
+  return valid;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   STEP 3 VALIDATION
+   ───────────────────────────────────────────────────────────── */
+function validateStep3() {
+  const desc = document.getElementById('p-desc').value.trim();
+  document.getElementById('p-desc').classList.remove('error');
+  document.getElementById('p-desc-err').classList.add('hidden');
+  if (!desc) {
+    document.getElementById('p-desc').classList.add('error');
+    document.getElementById('p-desc-err').classList.remove('hidden');
+    return false;
+  }
+  return true;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   IMAGE URL MANAGEMENT
+   Add image URLs to the list. Each URL shows as a chip tag
+   and a preview thumbnail.
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('img-url-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); addImageUrl(); }
+});
+
+function addImageUrl() {
+  const input = document.getElementById('img-url-input');
+  const url   = input.value.trim();
+  if (!url || imageUrls.includes(url)) { input.value = ''; return; }
+
+  imageUrls.push(url);
+  input.value = '';
+  renderImageTags();
+  renderImagePreviews();
+}
+
+function removeImageUrl(index) {
+  imageUrls.splice(index, 1);
+  renderImageTags();
+  renderImagePreviews();
+}
+
+function renderImageTags() {
+  const tagsEl = document.getElementById('img-tags');
+  tagsEl.innerHTML = imageUrls.map((url, i) => `
+    <span class="img-tag">
+      <span class="truncate max-w-[160px] text-gp-mid">${url.split('/').pop() || 'image'}</span>
+      <button onclick="removeImageUrl(${i})" class="text-gp-mid hover:text-gp-red transition-colors ml-1">×</button>
+    </span>
+  `).join('');
+}
+
+function renderImagePreviews() {
+  const previewEl = document.getElementById('img-previews');
+  const noImgMsg  = document.getElementById('no-images-msg');
+
+  if (imageUrls.length === 0) {
+    previewEl.innerHTML = '';
+    noImgMsg.classList.remove('hidden');
+    return;
+  }
+
+  noImgMsg.classList.add('hidden');
+  previewEl.innerHTML = imageUrls.map((url, i) => `
+    <div class="relative aspect-square bg-gp-lt rounded-sm overflow-hidden border border-gp-line">
+      <img src="${url}" alt="Product image ${i+1}" class="w-full h-full object-cover"
+           onerror="this.src='https://placehold.co/200x200/f5f5f5/8c8c8c?text=Error'" />
+      ${i === 0 ? '<span class="absolute top-1.5 left-1.5 bg-gp text-white text-[9px] tracking-wide uppercase px-1.5 py-0.5">Main</span>' : ''}
+      <button onclick="removeImageUrl(${i})"
+        class="absolute top-1.5 right-1.5 w-6 h-6 bg-white/90 rounded-sm flex items-center justify-center text-gp-mid hover:text-gp-red transition-colors text-xs">
+        ×
+      </button>
+    </div>
+  `).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SHIPPING LOCATIONS
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('ship-loc-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); addShipLocation(); }
+});
+
+function addShipLocation() {
+  const input = document.getElementById('ship-loc-input');
+  const loc   = input.value.trim();
+  if (!loc || shipLocations.includes(loc)) { input.value = ''; return; }
+  shipLocations.push(loc);
+  input.value = '';
+  renderShipTags();
+}
+
+function removeShipLocation(index) {
+  shipLocations.splice(index, 1);
+  renderShipTags();
+}
+
+function renderShipTags() {
+  document.getElementById('ship-tags').innerHTML = shipLocations.map((loc, i) => `
+    <span class="img-tag">
+      ${loc}
+      <button onclick="removeShipLocation(${i})" class="text-gp-mid hover:text-gp-red transition-colors ml-1">×</button>
+    </span>
+  `).join('');
+}
+
+/* Discount fields toggle */
+function toggleDiscountFields() {
+  document.getElementById('discount-fields').classList.toggle(
+    'hidden',
+    !document.getElementById('p-discount').checked
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SUBMIT PRODUCT
+   Builds the full payload the API expects and sends
+   POST /products
+   ───────────────────────────────────────────────────────────── */
+async function submitProduct() {
+  if (!validateStep3()) return;
+
+  // Loading state
+  const btn     = document.getElementById('next-btn');
+  const btnText = document.getElementById('next-btn-text');
+  const spinner = document.getElementById('submit-spinner');
+  btn.disabled      = true;
+  btnText.textContent = 'Publishing…';
+  spinner.classList.remove('hidden');
+  document.getElementById('modal-error').classList.add('hidden');
+
+  // Build payload matching the API spec exactly
+  const payload = {
+    title:               document.getElementById('p-title').value.trim(),
+    descp:               document.getElementById('p-desc').value.trim(),
+    price:               parseFloat(document.getElementById('p-price').value),
+    brand:               document.getElementById('p-brand').value.trim(),
+    quantity:            parseInt(document.getElementById('p-qty').value),
+    images:              imageUrls.length > 0 ? imageUrls : ['https://placehold.co/600x600/f5f5f5/8c8c8c?text=No+Image'],
+    currency:            document.getElementById('p-currency').value,
+    min_qty:             parseInt(document.getElementById('p-min-qty').value) || 1,
+    max_qty:             parseInt(document.getElementById('p-max-qty').value) || 10,
+    discount:            parseFloat(document.getElementById('p-discount-val').value) || 0,
+    discount_expiration: document.getElementById('p-discount-exp').value || '',
+    has_refund_policy:   document.getElementById('p-refund').checked,
+    has_discount:        document.getElementById('p-discount').checked,
+    has_shipment:        document.getElementById('p-shipment').checked,
+    has_variation:       false,
+    shipping_locations:  shipLocations,
+    attrib:              [],
+    category_id:         document.getElementById('p-category').value,
+    merchant_id:         merchantId,
+  };
+
+  try {
+    /* ── REAL API CALL ─────────────────────────────────────────
+       POST /products
+       Sends the full product payload to the server.
+       ────────────────────────────────────────────────────────── */
+    const res  = await fetch(`${API}/products`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Failed to create product.');
+
+    closeModal();
+    showToast(`"${payload.title}" published successfully!`, 'success');
+
+    // Reload products to show the new one
+    await loadData();
+
+  } catch(err) {
+    document.getElementById('modal-error-text').textContent = err.message;
+    document.getElementById('modal-error').classList.remove('hidden');
+    btn.disabled      = false;
+    btnText.textContent = 'Publish Product';
+    spinner.classList.add('hidden');
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DELETE PRODUCT
+   ───────────────────────────────────────────────────────────── */
+function openDeleteModal(id, name) {
+  deletingId = id;
+  document.getElementById('delete-product-name').textContent = `"${name}"`;
+  document.getElementById('delete-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeDeleteModal() {
+  deletingId = null;
+  document.getElementById('delete-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+  if (!deletingId) return;
+
+  const btn     = document.getElementById('confirm-delete-btn');
+  const btnText = document.getElementById('delete-btn-text');
+  const spinner = document.getElementById('delete-spinner');
+  btn.disabled      = true;
+  btnText.textContent = 'Deleting…';
+  spinner.classList.remove('hidden');
+
+  try {
+    /* ── DELETE API CALL ────────────────────────────────────────
+       The API doc doesn't show DELETE /products directly.
+       We use the product_id in the path as standard REST.
+       ────────────────────────────────────────────────────────── */
+    const res = await fetch(`${API}/products/${deletingId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Delete failed.');
+    }
+
+    closeDeleteModal();
+    showToast('Product deleted successfully.', 'success');
+    await loadData();
+
+  } catch(err) {
+    showToast(err.message, 'error');
+    btn.disabled      = false;
+    btnText.textContent = 'Delete';
+    spinner.classList.add('hidden');
+    closeDeleteModal();
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST
+   ───────────────────────────────────────────────────────────── */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg text-white ${type === 'error' ? 'bg-gp-red' : 'bg-gp'}`;
+  t.classList.remove('hidden');
+  setTimeout(() => { t.style.opacity = '0'; }, 2500);
+  setTimeout(() => { t.classList.add('hidden'); t.style.opacity = '1'; }, 3000);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SIDEBAR + LOGOUT
+   ───────────────────────────────────────────────────────────── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('-translate-x-full');
+  document.getElementById('overlay').classList.toggle('hidden');
+}
+function logout() {
+  if (confirm('Sign out of the admin portal?')) {
+    localStorage.removeItem('goopMerchant');
+    window.location.href = 'admin-login.html';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INIT
+   ───────────────────────────────────────────────────────────── */
+loadData();
+</script>
+</body>
+</html>

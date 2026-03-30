@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP Admin – Categories</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+            'gp-red':  '#dc2626',
+            'gp-green':'#16a34a',
+          },
+          fontFamily: {
+            serif:['"Times New Roman"','Georgia','serif'],
+            sans:['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 14px; font-size:12px;
+      letter-spacing:.12em; text-transform:uppercase;
+      transition:all .2s; border-radius:2px; cursor:pointer;
+    }
+    .nav-item:hover:not(.nav-active) { background:#f5f5f5; }
+    .nav-active { background:#1a1a1a; color:white; }
+    .goop-input {
+      width:100%; padding:11px 14px; border:1px solid #e5e5e5;
+      background:white; font-size:13px;
+      font-family:Helvetica,Arial,sans-serif;
+      outline:none; transition:border-color .2s;
+    }
+    .goop-input:focus { border-color:#1a1a1a; }
+    .goop-input.error { border-color:#dc2626; }
+    @keyframes fu {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fu { animation:fu .4s ease-out both; }
+    /* Modal backdrop */
+    .modal-backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:50; display:flex; align-items:center; justify-content:center;
+      padding:16px;
+    }
+    /* Toast */
+    #toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+      padding:12px 24px; font-size:11px; letter-spacing:.15em;
+      text-transform:uppercase; z-index:999;
+      transition:opacity .3s; white-space:nowrap;
+    }
+  </style>
+</head>
+<body class="bg-gp-lt font-sans text-gp">
+
+<div class="flex min-h-screen">
+
+  <!-- ===== SIDEBAR (same across all admin pages) ===== -->
+  <aside id="sidebar" class="w-64 bg-white border-r border-gp-line flex flex-col fixed top-0 left-0 h-full z-40 transition-transform duration-300">
+    <div class="px-6 py-6 border-b border-gp-line">
+      <a href="index.html" class="text-[22px] tracking-[.35em] uppercase font-serif font-bold">goop</a>
+      <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase mt-1">Admin Portal</p>
+    </div>
+    <div class="px-6 py-5 border-b border-gp-line">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gp flex items-center justify-center text-white text-sm font-semibold" id="merchant-avatar">M</div>
+        <div class="min-w-0">
+          <p class="text-[12px] font-semibold truncate" id="merchant-name">Merchant</p>
+          <p class="text-[10px] text-gp-mid truncate" id="merchant-store">Store</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <a href="admin-dashboard.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+        Dashboard
+      </a>
+      <a href="admin-products.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        Products
+      </a>
+      <a href="admin-categories.html" class="nav-item nav-active">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Categories
+      </a>
+      <a href="admin-orders.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Orders
+      </a>
+      <a href="admin-profile.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        Profile
+      </a>
+      <div class="border-t border-gp-line my-3"></div>
+      <a href="index.html" target="_blank" class="nav-item text-gp-mid">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        View Storefront
+      </a>
+      <button onclick="logout()" class="nav-item w-full text-gp-red hover:bg-red-50">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+        Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div id="overlay" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1 ml-0 lg:ml-64 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <div class="bg-white border-b border-gp-line px-6 h-16 flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="lg:hidden hover:opacity-60">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <div>
+          <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase">Admin</p>
+          <h2 class="text-sm font-semibold tracking-wide -mt-0.5">Categories</h2>
+        </div>
+      </div>
+      <!-- Add Category Button -->
+      <button onclick="openModal()" class="flex items-center gap-2 px-5 py-2.5 bg-gp text-white text-[11px] tracking-[.2em] uppercase hover:bg-gp/85 transition-colors">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add Category
+      </button>
+    </div>
+
+    <!-- Page body -->
+    <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+
+      <!-- Page header -->
+      <div class="mb-8">
+        <h1 class="text-2xl md:text-3xl font-serif mb-1">Categories</h1>
+        <p class="text-sm text-gp-mid">Organise your products into categories for easy browsing.</p>
+      </div>
+
+      <!-- ── LOADING STATE ── -->
+      <div id="page-loading" class="flex flex-col items-center justify-center py-24">
+        <svg class="animate-spin w-8 h-8 text-gp-mid mb-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        </svg>
+        <p class="text-[11px] text-gp-mid tracking-widest uppercase">Loading categories…</p>
+      </div>
+
+      <!-- ── CATEGORIES GRID ── -->
+      <div id="cats-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5" ></div>
+
+      <!-- ── EMPTY STATE ── -->
+      <div id="cats-empty" class="hidden flex flex-col items-center justify-center py-24 text-center">
+        <div class="w-16 h-16 rounded-full bg-gp-lt flex items-center justify-center mb-5">
+          <svg class="w-7 h-7 text-gp-mid" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/></svg>
+        </div>
+        <h3 class="text-lg font-serif mb-2">No categories yet</h3>
+        <p class="text-sm text-gp-mid mb-6 max-w-xs">Create your first category to start organising your products.</p>
+        <button onclick="openModal()" class="inline-flex items-center gap-2 border border-gp px-8 py-3 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-200">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Create First Category
+        </button>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     ADD / EDIT CATEGORY MODAL
+     One modal handles both creating and editing.
+     The title and submit button text change based on the mode.
+     ============================================================ -->
+<div id="modal" class="hidden modal-backdrop" onclick="handleBackdropClick(event)">
+  <div class="bg-white w-full max-w-md shadow-xl" onclick="event.stopPropagation()">
+
+    <!-- Modal header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gp-line">
+      <h3 class="font-serif text-lg" id="modal-title">Add Category</h3>
+      <button onclick="closeModal()" class="hover:opacity-50 transition-opacity">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="p-6">
+
+      <!-- API error inside modal -->
+      <div id="modal-error" class="hidden mb-5 p-3 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+        <span id="modal-error-text">Something went wrong.</span>
+      </div>
+
+      <form id="cat-form" novalidate>
+
+        <!-- Hidden field: stores category ID when editing -->
+        <input type="hidden" id="cat-id" value="" />
+
+        <!-- Category Name -->
+        <div class="mb-5">
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Category Name *</label>
+          <input
+            class="goop-input"
+            type="text"
+            id="cat-name"
+            placeholder="e.g. Beauty, Fashion, Wellness"
+          />
+          <p class="hidden mt-1.5 text-[11px] text-gp-red" id="cat-name-err">Name is required.</p>
+        </div>
+
+        <!-- Category Image URL -->
+        <div class="mb-6">
+          <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Image URL</label>
+          <input
+            class="goop-input"
+            type="url"
+            id="cat-image"
+            placeholder="https://example.com/image.jpg"
+          />
+          <p class="text-[11px] text-gp-mid mt-1.5">
+            Paste a direct image URL. Leave blank to use a placeholder.
+          </p>
+          <!-- Live image preview -->
+          <div id="img-preview-wrap" class="hidden mt-3">
+            <img id="img-preview" src="" alt="Preview" class="w-full h-32 object-cover rounded-sm border border-gp-line" />
+          </div>
+        </div>
+
+        <!-- Modal action buttons -->
+        <div class="flex gap-3">
+          <button
+            type="button"
+            onclick="closeModal()"
+            class="flex-1 py-3 border border-gp-line text-[11px] tracking-[.2em] uppercase hover:border-gp transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            id="modal-submit"
+            class="flex-1 py-3 bg-gp text-white text-[11px] tracking-[.2em] uppercase hover:bg-gp/85 transition-colors flex items-center justify-center gap-2"
+          >
+            <span id="modal-submit-text">Create Category</span>
+            <svg id="modal-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            </svg>
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="hidden modal-backdrop" onclick="handleDeleteBackdrop(event)">
+  <div class="bg-white w-full max-w-sm shadow-xl p-6" onclick="event.stopPropagation()">
+    <div class="flex items-start gap-4 mb-6">
+      <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-gp-red" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      </div>
+      <div>
+        <h3 class="font-serif text-lg mb-1">Delete Category?</h3>
+        <p class="text-[12px] text-gp-mid leading-relaxed">
+          Are you sure you want to delete <strong id="delete-cat-name">"this category"</strong>?
+          This cannot be undone and may affect products in this category.
+        </p>
+      </div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteModal()" class="flex-1 py-3 border border-gp-line text-[11px] tracking-[.2em] uppercase hover:border-gp transition-colors">Cancel</button>
+      <button id="confirm-delete-btn" class="flex-1 py-3 bg-gp-red text-white text-[11px] tracking-[.2em] uppercase hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+        <span id="delete-btn-text">Delete</span>
+        <svg id="delete-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div id="toast" class="hidden"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   API + AUTH
+   ───────────────────────────────────────────────────────────── */
+const API = 'http://ecommerce.reworkstaging.name.ng/v2';
+
+const merchantData = localStorage.getItem('goopMerchant');
+if (!merchantData) { window.location.href = 'admin-login.html'; }
+const merchant   = JSON.parse(merchantData);
+const merchantId = merchant._id || merchant.id;
+
+// Populate sidebar
+const fullName = `${merchant.first_name || ''} ${merchant.last_name || ''}`.trim() || 'Merchant';
+document.getElementById('merchant-name').textContent  = fullName;
+document.getElementById('merchant-store').textContent = merchant.store_name || 'Store';
+document.getElementById('merchant-avatar').textContent = fullName.charAt(0).toUpperCase();
+
+/* ─────────────────────────────────────────────────────────────
+   STATE
+   categories array holds everything fetched from the API.
+   editingId tracks which category is being edited (null = create mode).
+   deletingId tracks which category is pending deletion.
+   ───────────────────────────────────────────────────────────── */
+let categories = [];
+let editingId  = null;
+let deletingId = null;
+
+/* ─────────────────────────────────────────────────────────────
+   FETCH ALL CATEGORIES
+   GET /categories?merchant_id=xxx
+   ───────────────────────────────────────────────────────────── */
+async function loadCategories() {
+  showState('loading');
+
+  try {
+    const res  = await fetch(`${API}/categories?merchant_id=${merchantId}`);
+    const data = await res.json();
+    categories = Array.isArray(data) ? data : (data.data || []);
+    renderGrid();
+  } catch (err) {
+    showToast('Failed to load categories. Check your connection.', 'error');
+    showState('empty');
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER CATEGORIES GRID
+   Each card shows image, name, edit button, and delete button.
+   ───────────────────────────────────────────────────────────── */
+function renderGrid() {
+  const grid = document.getElementById('cats-grid');
+
+  if (categories.length === 0) {
+    showState('empty');
+    return;
+  }
+
+  showState('grid');
+
+  grid.innerHTML = categories.map((cat, i) => `
+    <div class="fu bg-white border border-gp-line rounded-sm overflow-hidden group" style="animation-delay:${i * 0.05}s">
+      <!-- Category image -->
+      <div class="aspect-[4/3] bg-gp-lt overflow-hidden relative">
+        <img
+          src="${cat.image || 'https://placehold.co/400x300/f5f5f5/8c8c8c?text=' + encodeURIComponent(cat.name)}"
+          alt="${cat.name}"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          onerror="this.src='https://placehold.co/400x300/f5f5f5/8c8c8c?text=${encodeURIComponent(cat.name)}'"
+        />
+        <!-- Hover overlay with action buttons -->
+        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+          <button
+            onclick="openEditModal('${cat._id || cat.id}')"
+            class="w-9 h-9 bg-white rounded-sm flex items-center justify-center hover:bg-gp hover:text-white transition-colors"
+            title="Edit category"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"/></svg>
+          </button>
+          <button
+            onclick="openDeleteModal('${cat._id || cat.id}', '${cat.name.replace(/'/g, "\\'")}')"
+            class="w-9 h-9 bg-white rounded-sm flex items-center justify-center hover:bg-gp-red hover:text-white transition-colors"
+            title="Delete category"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Category info -->
+      <div class="px-4 py-3 flex items-center justify-between">
+        <p class="text-[13px] font-medium truncate">${cat.name}</p>
+        <!-- Edit text link (always visible on mobile) -->
+        <button onclick="openEditModal('${cat._id || cat.id}')" class="text-[10px] text-gp-mid hover:text-gp transition-colors tracking-wide ml-2 shrink-0 md:hidden">
+          Edit
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SHOW / HIDE PAGE STATES
+   ───────────────────────────────────────────────────────────── */
+function showState(state) {
+  document.getElementById('page-loading').classList.toggle('hidden', state !== 'loading');
+  document.getElementById('cats-grid').classList.toggle('hidden',    state !== 'grid');
+  document.getElementById('cats-empty').classList.toggle('hidden',   state !== 'empty');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL: OPEN (CREATE MODE)
+   ───────────────────────────────────────────────────────────── */
+function openModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent       = 'Add Category';
+  document.getElementById('modal-submit-text').textContent = 'Create Category';
+  document.getElementById('cat-form').reset();
+  document.getElementById('cat-id').value                  = '';
+  document.getElementById('img-preview-wrap').classList.add('hidden');
+  document.getElementById('modal-error').classList.add('hidden');
+  document.getElementById('cat-name-err').classList.add('hidden');
+  document.getElementById('cat-name').classList.remove('error');
+  document.getElementById('modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('cat-name').focus(), 100);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL: OPEN (EDIT MODE)
+   Pre-fills the form with the existing category data.
+   ───────────────────────────────────────────────────────────── */
+function openEditModal(catId) {
+  const cat = categories.find(c => (c._id || c.id) === catId);
+  if (!cat) return;
+
+  editingId = catId;
+  document.getElementById('modal-title').textContent       = 'Edit Category';
+  document.getElementById('modal-submit-text').textContent = 'Save Changes';
+  document.getElementById('cat-id').value                  = catId;
+  document.getElementById('cat-name').value                = cat.name || '';
+  document.getElementById('cat-image').value               = cat.image || '';
+  document.getElementById('modal-error').classList.add('hidden');
+  document.getElementById('cat-name-err').classList.add('hidden');
+  document.getElementById('cat-name').classList.remove('error');
+
+  // Show image preview if URL exists
+  if (cat.image) {
+    document.getElementById('img-preview').src = cat.image;
+    document.getElementById('img-preview-wrap').classList.remove('hidden');
+  } else {
+    document.getElementById('img-preview-wrap').classList.add('hidden');
+  }
+
+  document.getElementById('modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODAL: CLOSE
+   ───────────────────────────────────────────────────────────── */
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   IMAGE URL PREVIEW
+   As the user types an image URL, shows a live preview.
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('cat-image').addEventListener('input', function() {
+  const url     = this.value.trim();
+  const preview = document.getElementById('img-preview');
+  const wrap    = document.getElementById('img-preview-wrap');
+
+  if (url) {
+    preview.src = url;
+    wrap.classList.remove('hidden');
+    preview.onerror = () => { wrap.classList.add('hidden'); };
+  } else {
+    wrap.classList.add('hidden');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   FORM SUBMIT: CREATE OR UPDATE CATEGORY
+   If editingId is set → PUT /categories/:id
+   If editingId is null → POST /categories
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('cat-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const name  = document.getElementById('cat-name').value.trim();
+  const image = document.getElementById('cat-image').value.trim();
+
+  // Validate
+  if (!name) {
+    document.getElementById('cat-name').classList.add('error');
+    document.getElementById('cat-name-err').classList.remove('hidden');
+    return;
+  }
+  document.getElementById('cat-name').classList.remove('error');
+  document.getElementById('cat-name-err').classList.add('hidden');
+
+  // Loading state
+  const submitBtn = document.getElementById('modal-submit');
+  const submitTxt = document.getElementById('modal-submit-text');
+  const spinner   = document.getElementById('modal-spinner');
+  submitBtn.disabled    = true;
+  submitTxt.textContent = editingId ? 'Saving…' : 'Creating…';
+  spinner.classList.remove('hidden');
+  document.getElementById('modal-error').classList.add('hidden');
+
+  try {
+    let res, data;
+
+    if (editingId) {
+      /* ── UPDATE ─────────────────────────────────────────────
+         PUT /categories/:category_id
+         ────────────────────────────────────────────────────── */
+      res  = await fetch(`${API}/categories/${editingId}`, {
+        method:  'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ name, image }),
+      });
+    } else {
+      /* ── CREATE ─────────────────────────────────────────────
+         POST /categories
+         ────────────────────────────────────────────────────── */
+      res  = await fetch(`${API}/categories`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ merchant_id: merchantId, name, image }),
+      });
+    }
+
+    data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Request failed.');
+
+    closeModal();
+    showToast(editingId ? `"${name}" updated successfully!` : `"${name}" created successfully!`, 'success');
+
+    // Reload categories from API to get fresh data
+    await loadCategories();
+
+  } catch (err) {
+    document.getElementById('modal-error-text').textContent = err.message;
+    document.getElementById('modal-error').classList.remove('hidden');
+    submitBtn.disabled    = false;
+    submitTxt.textContent = editingId ? 'Save Changes' : 'Create Category';
+    spinner.classList.add('hidden');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   DELETE MODAL
+   ───────────────────────────────────────────────────────────── */
+function openDeleteModal(catId, catName) {
+  deletingId = catId;
+  document.getElementById('delete-cat-name').textContent = `"${catName}"`;
+  document.getElementById('delete-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeDeleteModal() {
+  deletingId = null;
+  document.getElementById('delete-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+function handleDeleteBackdrop(e) {
+  if (e.target === document.getElementById('delete-modal')) closeDeleteModal();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CONFIRM DELETE
+   DELETE /categories/:category_id
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+  if (!deletingId) return;
+
+  const btn     = document.getElementById('confirm-delete-btn');
+  const btnText = document.getElementById('delete-btn-text');
+  const spinner = document.getElementById('delete-spinner');
+  btn.disabled      = true;
+  btnText.textContent = 'Deleting…';
+  spinner.classList.remove('hidden');
+
+  try {
+    const res = await fetch(`${API}/categories/${deletingId}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || 'Delete failed.');
+    }
+
+    closeDeleteModal();
+    showToast('Category deleted successfully.', 'success');
+    await loadCategories();
+
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.disabled      = false;
+    btnText.textContent = 'Delete';
+    spinner.classList.add('hidden');
+    closeDeleteModal();
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST NOTIFICATION
+   type: 'success' (dark) | 'error' (red)
+   ───────────────────────────────────────────────────────────── */
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className   = `fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg transition-opacity duration-300 text-white ${type === 'error' ? 'bg-gp-red' : 'bg-gp'}`;
+  toast.classList.remove('hidden');
+  setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+  setTimeout(() => { toast.classList.add('hidden'); toast.style.opacity = '1'; }, 3000);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SIDEBAR + LOGOUT
+   ───────────────────────────────────────────────────────────── */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('-translate-x-full');
+  document.getElementById('overlay').classList.toggle('hidden');
+}
+function logout() {
+  if (confirm('Sign out of the admin portal?')) {
+    localStorage.removeItem('goopMerchant');
+    window.location.href = 'admin-login.html';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INIT
+   ───────────────────────────────────────────────────────────── */
+loadCategories();
+</script>
+</body>
+</html>

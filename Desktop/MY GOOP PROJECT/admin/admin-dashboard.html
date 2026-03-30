@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP Admin – Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+            'gp-red':  '#dc2626',
+            'gp-green':'#16a34a',
+          },
+          fontFamily: {
+            serif:['"Times New Roman"','Georgia','serif'],
+            sans:['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    @keyframes fu {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fu  { animation: fu .5s ease-out both; }
+    .fu2 { animation: fu .5s ease-out .1s both; }
+    .fu3 { animation: fu .5s ease-out .2s both; }
+    .fu4 { animation: fu .5s ease-out .3s both; }
+
+    /* Sidebar active link */
+    .nav-active {
+      background: #1a1a1a;
+      color: white;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; font-size: 12px;
+      letter-spacing: .12em; text-transform: uppercase;
+      transition: all .2s; border-radius: 2px;
+      cursor: pointer;
+    }
+    .nav-item:hover:not(.nav-active) { background: #f5f5f5; }
+
+    /* Stat card hover */
+    .stat-card { transition: transform .2s, box-shadow .2s; }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+
+    /* Scrollbar for table */
+    .table-wrap { overflow-x: auto; }
+    .table-wrap::-webkit-scrollbar { height: 4px; }
+    .table-wrap::-webkit-scrollbar-track { background: #f5f5f5; }
+    .table-wrap::-webkit-scrollbar-thumb { background: #e5e5e5; }
+  </style>
+</head>
+<body class="bg-gp-lt font-sans text-gp">
+
+<!-- ============================================================
+     LAYOUT WRAPPER: sidebar + main content side by side
+     ============================================================ -->
+<div class="flex min-h-screen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="w-64 bg-white border-r border-gp-line flex flex-col fixed top-0 left-0 h-full z-40 transition-transform duration-300">
+
+    <!-- Brand -->
+    <div class="px-6 py-6 border-b border-gp-line">
+      <a href="index.html" class="text-[22px] tracking-[.35em] uppercase font-serif font-bold">goop</a>
+      <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase mt-1">Admin Portal</p>
+    </div>
+
+    <!-- Merchant Info -->
+    <div class="px-6 py-5 border-b border-gp-line">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gp flex items-center justify-center text-white text-sm font-semibold" id="merchant-avatar">M</div>
+        <div class="min-w-0">
+          <p class="text-[12px] font-semibold truncate" id="merchant-name">Merchant</p>
+          <p class="text-[10px] text-gp-mid truncate" id="merchant-store">Store Name</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav Links -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <a href="admin-dashboard.html" class="nav-item nav-active">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+        Dashboard
+      </a>
+      <a href="admin-products.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        Products
+      </a>
+      <a href="admin-categories.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Categories
+      </a>
+      <a href="admin-orders.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Orders
+      </a>
+      <a href="admin-profile.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        Profile
+      </a>
+
+      <!-- Divider -->
+      <div class="border-t border-gp-line my-3"></div>
+
+      <!-- View Store -->
+      <a href="index.html" target="_blank" class="nav-item text-gp-mid">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        View Storefront
+      </a>
+
+      <!-- Logout -->
+      <button onclick="logout()" class="nav-item w-full text-gp-red hover:bg-red-50">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+        Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <!-- ===== MOBILE SIDEBAR OVERLAY ===== -->
+  <div id="overlay" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1 ml-0 lg:ml-64 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <div class="bg-white border-b border-gp-line px-6 h-16 flex items-center justify-between sticky top-0 z-20">
+      <!-- Mobile menu toggle -->
+      <button onclick="toggleSidebar()" class="lg:hidden hover:opacity-60 transition-opacity">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+      <div class="hidden lg:block">
+        <h2 class="text-[11px] tracking-[.2em] uppercase text-gp-mid">Dashboard</h2>
+      </div>
+      <!-- Top right: date -->
+      <div class="text-[11px] text-gp-mid tracking-wide" id="current-date"></div>
+    </div>
+
+    <!-- Page body -->
+    <div class="flex-1 p-6 md:p-8 max-w-7xl w-full mx-auto">
+
+      <!-- Welcome heading -->
+      <div class="mb-8 fu">
+        <h1 class="text-2xl md:text-3xl font-serif mb-1">
+          Good <span id="greeting-time">morning</span>, <span id="greeting-name">Merchant</span> 👋
+        </h1>
+        <p class="text-sm text-gp-mid">Here's what's happening with your store today.</p>
+      </div>
+
+      <!-- ── STAT CARDS ── -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+
+        <!-- Total Products -->
+        <div class="stat-card bg-white border border-gp-line p-5 rounded-sm fu">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 bg-gp-lt rounded-sm flex items-center justify-center">
+              <svg class="w-4 h-4 text-gp" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+            </div>
+            <a href="admin-products.html" class="text-[10px] text-gp-mid hover:text-gp transition-colors tracking-wide">View →</a>
+          </div>
+          <p class="text-2xl font-semibold mb-1" id="stat-products">—</p>
+          <p class="text-[11px] text-gp-mid tracking-wide uppercase">Total Products</p>
+        </div>
+
+        <!-- Total Categories -->
+        <div class="stat-card bg-white border border-gp-line p-5 rounded-sm fu2">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 bg-gp-lt rounded-sm flex items-center justify-center">
+              <svg class="w-4 h-4 text-gp" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+            </div>
+            <a href="admin-categories.html" class="text-[10px] text-gp-mid hover:text-gp transition-colors tracking-wide">View →</a>
+          </div>
+          <p class="text-2xl font-semibold mb-1" id="stat-categories">—</p>
+          <p class="text-[11px] text-gp-mid tracking-wide uppercase">Categories</p>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="stat-card bg-white border border-gp-line p-5 rounded-sm fu3">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 bg-gp-lt rounded-sm flex items-center justify-center">
+              <svg class="w-4 h-4 text-gp" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>
+            </div>
+            <a href="admin-orders.html" class="text-[10px] text-gp-mid hover:text-gp transition-colors tracking-wide">View →</a>
+          </div>
+          <p class="text-2xl font-semibold mb-1" id="stat-orders">—</p>
+          <p class="text-[11px] text-gp-mid tracking-wide uppercase">Total Orders</p>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="stat-card bg-gp text-white p-5 rounded-sm fu4">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-9 h-9 bg-white/10 rounded-sm flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <a href="admin-orders.html" class="text-[10px] text-white/60 hover:text-white transition-colors tracking-wide">View →</a>
+          </div>
+          <p class="text-2xl font-semibold mb-1" id="stat-revenue">—</p>
+          <p class="text-[11px] text-white/60 tracking-wide uppercase">Total Revenue</p>
+        </div>
+
+      </div>
+
+      <!-- ── BOTTOM GRID: Recent Products + Quick Actions ── -->
+      <div class="grid lg:grid-cols-3 gap-6">
+
+        <!-- Recent Products Table (takes 2/3) -->
+        <div class="lg:col-span-2 bg-white border border-gp-line rounded-sm">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gp-line">
+            <h3 class="text-[11px] tracking-[.2em] uppercase font-semibold">Recent Products</h3>
+            <a href="admin-products.html" class="text-[11px] text-gp-mid hover:text-gp transition-colors tracking-wide">View all →</a>
+          </div>
+
+          <!-- Loading state -->
+          <div id="products-loading" class="px-6 py-12 text-center">
+            <svg class="animate-spin w-6 h-6 text-gp-mid mx-auto" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            </svg>
+            <p class="text-[11px] text-gp-mid mt-3 tracking-wide">Loading products…</p>
+          </div>
+
+          <!-- Products table -->
+          <div id="products-table" class="hidden table-wrap">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-gp-line">
+                  <th class="text-left px-6 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal">Product</th>
+                  <th class="text-left px-4 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal hidden md:table-cell">Category</th>
+                  <th class="text-right px-6 py-3 text-[10px] tracking-[.15em] uppercase text-gp-mid font-normal">Price</th>
+                </tr>
+              </thead>
+              <tbody id="products-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- Empty state -->
+          <div id="products-empty" class="hidden px-6 py-12 text-center">
+            <p class="text-sm text-gp-mid mb-4">No products yet.</p>
+            <a href="admin-products.html" class="inline-block border border-gp px-6 py-2.5 text-[11px] tracking-[.2em] uppercase hover:bg-gp hover:text-white transition-all duration-200">
+              Add First Product
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick Actions (takes 1/3) -->
+        <div class="space-y-4">
+
+          <!-- Quick action card -->
+          <div class="bg-white border border-gp-line rounded-sm p-6">
+            <h3 class="text-[11px] tracking-[.2em] uppercase font-semibold mb-5">Quick Actions</h3>
+            <div class="space-y-3">
+              <a href="admin-products.html" class="flex items-center gap-3 p-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all duration-200 rounded-sm group">
+                <div class="w-8 h-8 bg-gp-lt rounded-sm flex items-center justify-center group-hover:bg-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                </div>
+                <div>
+                  <p class="text-[12px] font-medium">Add Product</p>
+                  <p class="text-[10px] text-gp-mid">Create a new listing</p>
+                </div>
+              </a>
+              <a href="admin-categories.html" class="flex items-center gap-3 p-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all duration-200 rounded-sm group">
+                <div class="w-8 h-8 bg-gp-lt rounded-sm flex items-center justify-center group-hover:bg-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                </div>
+                <div>
+                  <p class="text-[12px] font-medium">Add Category</p>
+                  <p class="text-[10px] text-gp-mid">Organise your products</p>
+                </div>
+              </a>
+              <a href="admin-orders.html" class="flex items-center gap-3 p-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all duration-200 rounded-sm group">
+                <div class="w-8 h-8 bg-gp-lt rounded-sm flex items-center justify-center group-hover:bg-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75"/></svg>
+                </div>
+                <div>
+                  <p class="text-[12px] font-medium">View Sales</p>
+                  <p class="text-[10px] text-gp-mid">Check recent orders</p>
+                </div>
+              </a>
+              <a href="admin-profile.html" class="flex items-center gap-3 p-3 border border-gp-line hover:border-gp hover:bg-gp-lt transition-all duration-200 rounded-sm group">
+                <div class="w-8 h-8 bg-gp-lt rounded-sm flex items-center justify-center group-hover:bg-white transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div>
+                  <p class="text-[12px] font-medium">Edit Profile</p>
+                  <p class="text-[10px] text-gp-mid">Update store details</p>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Categories summary card -->
+          <div class="bg-white border border-gp-line rounded-sm p-6">
+            <h3 class="text-[11px] tracking-[.2em] uppercase font-semibold mb-4">Your Categories</h3>
+            <div id="cats-list" class="space-y-2">
+              <div class="flex items-center justify-center py-4">
+                <svg class="animate-spin w-5 h-5 text-gp-mid" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /page body -->
+  </main>
+</div><!-- /layout -->
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   API BASE URL
+   ───────────────────────────────────────────────────────────── */
+const API = 'http://ecommerce.reworkstaging.name.ng/v2';
+
+/* ─────────────────────────────────────────────────────────────
+   AUTH GUARD
+   If no merchant is logged in, redirect to login page.
+   Every admin page starts with this check.
+   ───────────────────────────────────────────────────────────── */
+const merchantData = localStorage.getItem('goopMerchant');
+if (!merchantData) { window.location.href = 'admin-login.html'; }
+const merchant = JSON.parse(merchantData);
+
+/* ─────────────────────────────────────────────────────────────
+   POPULATE MERCHANT INFO IN SIDEBAR
+   Uses the data saved during login.
+   ───────────────────────────────────────────────────────────── */
+const fullName   = `${merchant.first_name || ''} ${merchant.last_name || ''}`.trim() || 'Merchant';
+const storeName  = merchant.store_name || 'My Store';
+const merchantId = merchant._id || merchant.id;
+
+document.getElementById('merchant-name').textContent  = fullName;
+document.getElementById('merchant-store').textContent = storeName;
+document.getElementById('merchant-avatar').textContent = fullName.charAt(0).toUpperCase();
+document.getElementById('greeting-name').textContent  = merchant.first_name || 'Merchant';
+
+/* ─────────────────────────────────────────────────────────────
+   GREETING + DATE
+   Changes greeting based on time of day.
+   ───────────────────────────────────────────────────────────── */
+const hour = new Date().getHours();
+const greetingTime = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
+document.getElementById('greeting-time').textContent = greetingTime;
+
+const now = new Date();
+document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+/* ─────────────────────────────────────────────────────────────
+   FETCH DASHBOARD DATA
+   Runs three API calls in parallel using Promise.all so the
+   page loads everything at the same time instead of waiting
+   for each one to finish before starting the next.
+   ───────────────────────────────────────────────────────────── */
+async function loadDashboard() {
+  try {
+    const [productsRes, categoriesRes, ordersRes] = await Promise.all([
+      fetch(`${API}/products?merchant_id=${merchantId}`),
+      fetch(`${API}/categories?merchant_id=${merchantId}`),
+      fetch(`${API}/sales?merchant_id=${merchantId}`),
+    ]);
+
+    const productsData   = await productsRes.json();
+    const categoriesData = await categoriesRes.json();
+    const ordersData     = await ordersRes.json();
+
+    /* ── Extract arrays safely ──────────────────────────────
+       APIs sometimes return { data: [...] } or just [...].
+       This handles both formats.
+       ────────────────────────────────────────────────────── */
+    const products   = Array.isArray(productsData)   ? productsData   : (productsData.data   || []);
+    const categories = Array.isArray(categoriesData) ? categoriesData : (categoriesData.data || []);
+    const orders     = Array.isArray(ordersData)     ? ordersData     : (ordersData.data     || []);
+
+    // ── Update stat cards ──
+    document.getElementById('stat-products').textContent   = products.length;
+    document.getElementById('stat-categories').textContent = categories.length;
+    document.getElementById('stat-orders').textContent     = orders.length;
+
+    // Calculate total revenue from all orders
+    const revenue = orders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+    document.getElementById('stat-revenue').textContent = revenue > 0
+      ? `₦${revenue.toLocaleString()}`
+      : '₦0';
+
+    // ── Render recent products table ──
+    renderProducts(products.slice(0, 6));
+
+    // ── Render categories list ──
+    renderCategories(categories);
+
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+    // Show fallback zeros if API fails
+    ['stat-products','stat-categories','stat-orders'].forEach(id => {
+      document.getElementById(id).textContent = '0';
+    });
+    document.getElementById('stat-revenue').textContent = '₦0';
+    renderProducts([]);
+    renderCategories([]);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER RECENT PRODUCTS TABLE
+   Shows the 6 most recent products in a clean table.
+   ───────────────────────────────────────────────────────────── */
+function renderProducts(products) {
+  const loading = document.getElementById('products-loading');
+  const table   = document.getElementById('products-table');
+  const empty   = document.getElementById('products-empty');
+  const tbody   = document.getElementById('products-tbody');
+
+  loading.classList.add('hidden');
+
+  if (products.length === 0) {
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  table.classList.remove('hidden');
+  tbody.innerHTML = products.map(p => `
+    <tr class="border-b border-gp-line hover:bg-gp-lt/50 transition-colors">
+      <td class="px-6 py-4">
+        <div class="flex items-center gap-3">
+          <!-- Product thumbnail -->
+          <div class="w-10 h-10 bg-gp-lt rounded-sm overflow-hidden shrink-0">
+            <img
+              src="${p.images?.[0] || 'https://placehold.co/80x80/f5f5f5/8c8c8c?text=P'}"
+              alt="${p.title || 'Product'}"
+              class="w-full h-full object-cover"
+              onerror="this.src='https://placehold.co/80x80/f5f5f5/8c8c8c?text=P'"
+            />
+          </div>
+          <div class="min-w-0">
+            <p class="text-[13px] truncate max-w-[180px]">${p.title || 'Untitled'}</p>
+            <p class="text-[10px] text-gp-mid">${p.brand || ''}</p>
+          </div>
+        </div>
+      </td>
+      <td class="px-4 py-4 text-[12px] text-gp-mid hidden md:table-cell">
+        ${p.category_id || '—'}
+      </td>
+      <td class="px-6 py-4 text-right text-[13px]">
+        ₦${parseFloat(p.price || 0).toLocaleString()}
+      </td>
+    </tr>
+  `).join('');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RENDER CATEGORIES LIST
+   ───────────────────────────────────────────────────────────── */
+function renderCategories(categories) {
+  const el = document.getElementById('cats-list');
+
+  if (categories.length === 0) {
+    el.innerHTML = `
+      <p class="text-[12px] text-gp-mid text-center py-2">No categories yet.</p>
+      <a href="admin-categories.html" class="block text-center text-[11px] tracking-[.15em] uppercase text-gp hover:underline mt-2">
+        Create one →
+      </a>`;
+    return;
+  }
+
+  el.innerHTML = categories.slice(0, 5).map(c => `
+    <div class="flex items-center gap-3 py-2 border-b border-gp-line last:border-0">
+      <div class="w-7 h-7 bg-gp-lt rounded-sm overflow-hidden shrink-0">
+        <img
+          src="${c.image || 'https://placehold.co/56x56/f5f5f5/8c8c8c?text=C'}"
+          alt="${c.name}"
+          class="w-full h-full object-cover"
+          onerror="this.src='https://placehold.co/56x56/f5f5f5/8c8c8c?text=C'"
+        />
+      </div>
+      <span class="text-[12px] truncate">${c.name}</span>
+    </div>
+  `).join('');
+
+  if (categories.length > 5) {
+    el.innerHTML += `
+      <a href="admin-categories.html" class="block text-center text-[11px] tracking-[.15em] uppercase text-gp-mid hover:text-gp transition-colors mt-2">
+        +${categories.length - 5} more →
+      </a>`;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOBILE SIDEBAR TOGGLE
+   ───────────────────────────────────────────────────────────── */
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LOGOUT
+   Clears the merchant session and redirects to login.
+   ───────────────────────────────────────────────────────────── */
+function logout() {
+  if (confirm('Sign out of the admin portal?')) {
+    localStorage.removeItem('goopMerchant');
+    window.location.href = 'admin-login.html';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INIT
+   ───────────────────────────────────────────────────────────── */
+loadDashboard();
+</script>
+</body>
+</html>

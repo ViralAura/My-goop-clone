@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GOOP Admin – Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'gp':      '#1a1a1a',
+            'gp-mid':  '#8c8c8c',
+            'gp-lt':   '#f5f5f5',
+            'gp-cream':'#faf8f5',
+            'gp-line': '#e5e5e5',
+            'gp-red':  '#dc2626',
+            'gp-green':'#16a34a',
+          },
+          fontFamily: {
+            serif:['"Times New Roman"','Georgia','serif'],
+            sans:['Helvetica','Arial','sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body { -webkit-font-smoothing: antialiased; }
+    .nav-item {
+      display:flex; align-items:center; gap:10px;
+      padding:10px 14px; font-size:12px;
+      letter-spacing:.12em; text-transform:uppercase;
+      transition:all .2s; border-radius:2px; cursor:pointer;
+    }
+    .nav-item:hover:not(.nav-active) { background:#f5f5f5; }
+    .nav-active { background:#1a1a1a; color:white; }
+    .goop-input {
+      width:100%; padding:11px 14px; border:1px solid #e5e5e5;
+      background:white; font-size:13px;
+      font-family:Helvetica,Arial,sans-serif;
+      outline:none; transition:border-color .2s;
+    }
+    .goop-input:focus { border-color:#1a1a1a; }
+    .goop-input.error { border-color:#dc2626; }
+    .goop-input:disabled {
+      background:#fafafa; color:#8c8c8c; cursor:not-allowed;
+    }
+    @keyframes fu {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .fu  { animation:fu .4s ease-out both; }
+    .fu2 { animation:fu .4s ease-out .08s both; }
+    .fu3 { animation:fu .4s ease-out .16s both; }
+    /* Tab underline */
+    .tab-active {
+      border-bottom:2px solid #1a1a1a; color:#1a1a1a;
+    }
+    .tab-inactive {
+      border-bottom:2px solid transparent; color:#8c8c8c;
+    }
+    /* Strength bar */
+    .str-bar { height:3px; border-radius:2px; transition:width .3s,background .3s; }
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-6px)}
+      40%{transform:translateX(6px)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+    .shake { animation:shake .4s ease; }
+  </style>
+</head>
+<body class="bg-gp-lt font-sans text-gp">
+
+<div class="flex min-h-screen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside id="sidebar" class="w-64 bg-white border-r border-gp-line flex flex-col fixed top-0 left-0 h-full z-40 transition-transform duration-300">
+    <div class="px-6 py-6 border-b border-gp-line">
+      <a href="index.html" class="text-[22px] tracking-[.35em] uppercase font-serif font-bold">goop</a>
+      <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase mt-1">Admin Portal</p>
+    </div>
+    <div class="px-6 py-5 border-b border-gp-line">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-gp flex items-center justify-center text-white text-sm font-semibold" id="merchant-avatar">M</div>
+        <div class="min-w-0">
+          <p class="text-[12px] font-semibold truncate" id="merchant-name">Merchant</p>
+          <p class="text-[10px] text-gp-mid truncate" id="merchant-store">Store</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <a href="admin-dashboard.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+        Dashboard
+      </a>
+      <a href="admin-products.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        Products
+      </a>
+      <a href="admin-categories.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+        Categories
+      </a>
+      <a href="admin-orders.html" class="nav-item">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+        Orders
+      </a>
+      <a href="admin-profile.html" class="nav-item nav-active">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+        Profile
+      </a>
+      <div class="border-t border-gp-line my-3"></div>
+      <a href="index.html" target="_blank" class="nav-item text-gp-mid">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+        View Storefront
+      </a>
+      <button onclick="logout()" class="nav-item w-full text-gp-red hover:bg-red-50">
+        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
+        Sign Out
+      </button>
+    </nav>
+  </aside>
+
+  <div id="overlay" class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" onclick="toggleSidebar()"></div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="flex-1 ml-0 lg:ml-64 flex flex-col min-h-screen">
+
+    <!-- Top bar -->
+    <div class="bg-white border-b border-gp-line px-6 h-16 flex items-center gap-4 sticky top-0 z-20">
+      <button onclick="toggleSidebar()" class="lg:hidden hover:opacity-60">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+      </button>
+      <div>
+        <p class="text-[10px] text-gp-mid tracking-[.2em] uppercase">Admin</p>
+        <h2 class="text-sm font-semibold tracking-wide -mt-0.5">Profile & Settings</h2>
+      </div>
+    </div>
+
+    <!-- Page body -->
+    <div class="flex-1 p-6 md:p-8 max-w-5xl w-full mx-auto">
+
+      <!-- Page header + avatar -->
+      <div class="flex flex-col sm:flex-row sm:items-center gap-5 mb-10 fu">
+        <!-- Large avatar circle -->
+        <div class="w-20 h-20 rounded-full bg-gp flex items-center justify-center text-white text-3xl font-semibold shrink-0" id="avatar-large">M</div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-serif" id="header-name">Merchant Name</h1>
+          <p class="text-sm text-gp-mid mt-1" id="header-store">Store Name</p>
+          <p class="text-[11px] text-gp-mid tracking-wide mt-0.5" id="header-email">email@example.com</p>
+        </div>
+      </div>
+
+      <!-- ── TAB SWITCHER ── -->
+      <div class="flex border-b border-gp-line mb-8 fu2">
+        <button id="tab-profile" onclick="switchTab('profile')" class="tab-active px-6 py-3 text-[11px] tracking-[.2em] uppercase transition-colors">
+          Store Info
+        </button>
+        <button id="tab-password" onclick="switchTab('password')" class="tab-inactive px-6 py-3 text-[11px] tracking-[.2em] uppercase transition-colors">
+          Change Password
+        </button>
+        <button id="tab-social" onclick="switchTab('social')" class="tab-inactive px-6 py-3 text-[11px] tracking-[.2em] uppercase transition-colors">
+          Social Media
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 1: STORE INFO
+           PUT /merchants/:merchant_id
+           ══════════════════════════════════════════════ -->
+      <div id="panel-profile" class="fu3">
+
+        <!-- Success / Error alerts -->
+        <div id="profile-success" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-[12px] flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Profile updated successfully!
+        </div>
+        <div id="profile-error" class="hidden mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+          <span id="profile-error-text">Something went wrong.</span>
+        </div>
+
+        <form id="profile-form" novalidate>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            <!-- First Name -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">First Name *</label>
+              <input class="goop-input" type="text" id="p-first" placeholder="John" />
+              <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-first-err">Required.</p>
+            </div>
+
+            <!-- Last Name -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Last Name *</label>
+              <input class="goop-input" type="text" id="p-last" placeholder="Doe" />
+              <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-last-err">Required.</p>
+            </div>
+
+            <!-- Email -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Email Address *</label>
+              <input class="goop-input" type="email" id="p-email" placeholder="merchant@example.com" />
+              <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-email-err">Valid email required.</p>
+            </div>
+
+            <!-- Phone -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Phone Number</label>
+              <input class="goop-input" type="tel" id="p-phone" placeholder="09012345678" />
+            </div>
+
+            <!-- Store Name -->
+            <div class="md:col-span-2">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Store Name *</label>
+              <input class="goop-input" type="text" id="p-store" placeholder="My Goop Store" />
+              <p class="hidden mt-1.5 text-[11px] text-gp-red" id="p-store-err">Store name is required.</p>
+            </div>
+
+            <!-- Store Description -->
+            <div class="md:col-span-2">
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Store Description</label>
+              <textarea class="goop-input resize-none" id="p-descp" rows="3" placeholder="Tell customers about your store…"></textarea>
+            </div>
+
+            <!-- State -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">State / Region</label>
+              <input class="goop-input" type="text" id="p-state" placeholder="e.g. Lagos" />
+            </div>
+
+            <!-- District -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">District / City</label>
+              <input class="goop-input" type="text" id="p-district" placeholder="e.g. Victoria Island" />
+            </div>
+
+            <!-- Store Icon URL -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Store Icon URL</label>
+              <input class="goop-input" type="url" id="p-icon" placeholder="https://example.com/icon.png" />
+            </div>
+
+            <!-- Store Banner URL -->
+            <div>
+              <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Store Banner URL</label>
+              <input class="goop-input" type="url" id="p-banner" placeholder="https://example.com/banner.jpg" />
+            </div>
+
+          </div>
+
+          <!-- Banner preview -->
+          <div id="banner-preview-wrap" class="hidden mt-4 rounded-sm overflow-hidden border border-gp-line">
+            <img id="banner-preview" src="" alt="Banner preview" class="w-full h-32 object-cover" />
+          </div>
+
+          <!-- Save button -->
+          <div class="mt-8 flex items-center gap-4">
+            <button
+              type="submit"
+              id="profile-btn"
+              class="px-10 py-3.5 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors flex items-center gap-2"
+            >
+              <span id="profile-btn-text">Save Changes</span>
+              <svg id="profile-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+            </button>
+            <button type="button" onclick="resetProfileForm()" class="text-[11px] text-gp-mid hover:text-gp transition-colors tracking-wide underline underline-offset-2">
+              Reset changes
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 2: CHANGE PASSWORD
+           PUT /merchants/:merchant_id/change-passwd
+           ══════════════════════════════════════════════ -->
+      <div id="panel-password" class="hidden">
+
+        <div id="pw-success" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-[12px] flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Password changed successfully!
+        </div>
+        <div id="pw-error" class="hidden mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+          <span id="pw-error-text">Something went wrong.</span>
+        </div>
+
+        <form id="password-form" novalidate class="max-w-md">
+
+          <!-- Security info box -->
+          <div class="bg-gp-lt border border-gp-line p-4 rounded-sm mb-6 flex gap-3">
+            <svg class="w-5 h-5 text-gp-mid shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            <p class="text-[12px] text-gp-mid leading-relaxed">
+              Use a strong password with at least 8 characters, including uppercase letters, numbers, and symbols.
+            </p>
+          </div>
+
+          <!-- Current Password -->
+          <div class="mb-5">
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Current Password *</label>
+            <div class="relative">
+              <input class="goop-input pr-10" type="password" id="pw-old" placeholder="Your current password" />
+              <button type="button" onclick="togglePw('pw-old', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gp-mid hover:text-gp transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </button>
+            </div>
+            <p class="hidden mt-1.5 text-[11px] text-gp-red" id="pw-old-err">Current password is required.</p>
+          </div>
+
+          <!-- New Password -->
+          <div class="mb-2">
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2">New Password *</label>
+            <div class="relative">
+              <input class="goop-input pr-10" type="password" id="pw-new" placeholder="Min. 8 characters" oninput="checkStrength(this.value)" />
+              <button type="button" onclick="togglePw('pw-new', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-gp-mid hover:text-gp transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </button>
+            </div>
+            <p class="hidden mt-1.5 text-[11px] text-gp-red" id="pw-new-err">Password must be at least 8 characters.</p>
+          </div>
+
+          <!-- Password strength meter -->
+          <div class="mb-5">
+            <div class="flex gap-1 mt-2">
+              <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-1" class="str-bar w-0"></div></div>
+              <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-2" class="str-bar w-0"></div></div>
+              <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-3" class="str-bar w-0"></div></div>
+              <div class="flex-1 h-[3px] rounded-full bg-gp-line overflow-hidden"><div id="str-4" class="str-bar w-0"></div></div>
+            </div>
+            <p id="str-label" class="text-[10px] text-gp-mid mt-1.5 h-3"></p>
+          </div>
+
+          <!-- Confirm New Password -->
+          <div class="mb-8">
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2">Confirm New Password *</label>
+            <input class="goop-input" type="password" id="pw-confirm" placeholder="Repeat new password" />
+            <p class="hidden mt-1.5 text-[11px] text-gp-red" id="pw-confirm-err">Passwords do not match.</p>
+          </div>
+
+          <!-- Submit -->
+          <button
+            type="submit"
+            id="pw-btn"
+            class="px-10 py-3.5 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors flex items-center gap-2"
+          >
+            <span id="pw-btn-text">Update Password</span>
+            <svg id="pw-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            </svg>
+          </button>
+
+        </form>
+      </div>
+
+      <!-- ══════════════════════════════════════════════
+           TAB 3: SOCIAL MEDIA
+           PUT /merchants/:merchant_id (social_media fields)
+           ══════════════════════════════════════════════ -->
+      <div id="panel-social" class="hidden">
+
+        <div id="social-success" class="hidden mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-[12px] flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Social links updated!
+        </div>
+        <div id="social-error" class="hidden mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-[12px]">
+          <span id="social-error-text">Something went wrong.</span>
+        </div>
+
+        <form id="social-form" class="max-w-md space-y-5">
+
+          <!-- Info box -->
+          <div class="bg-gp-lt border border-gp-line p-4 rounded-sm mb-2">
+            <p class="text-[12px] text-gp-mid leading-relaxed">
+              Add your social media handles so customers can follow and connect with your brand.
+            </p>
+          </div>
+
+          <!-- X (Twitter) -->
+          <div>
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2 flex items-center gap-2">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              X (Twitter)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gp-mid text-sm">@</span>
+              <input class="goop-input pl-8" type="text" id="s-x" placeholder="yourhandle" />
+            </div>
+          </div>
+
+          <!-- Facebook -->
+          <div>
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2 flex items-center gap-2">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              Facebook
+            </label>
+            <input class="goop-input" type="text" id="s-fb" placeholder="facebook.com/yourpage" />
+          </div>
+
+          <!-- Instagram -->
+          <div>
+            <label class="block text-[11px] tracking-[.15em] uppercase mb-2 flex items-center gap-2">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              Instagram
+            </label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gp-mid text-sm">@</span>
+              <input class="goop-input pl-8" type="text" id="s-ig" placeholder="yourhandle" />
+            </div>
+          </div>
+
+          <!-- Save Social -->
+          <button
+            type="submit"
+            id="social-btn"
+            class="px-10 py-3.5 bg-gp text-white text-[11px] tracking-[.25em] uppercase hover:bg-gp/85 transition-colors flex items-center gap-2"
+          >
+            <span id="social-btn-text">Save Social Links</span>
+            <svg id="social-spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+            </svg>
+          </button>
+
+        </form>
+      </div>
+
+      <!-- ── DANGER ZONE ── -->
+      <div class="mt-16 pt-8 border-t border-gp-line fu3">
+        <h3 class="text-[11px] tracking-[.2em] uppercase font-semibold text-gp-red mb-4">Danger Zone</h3>
+        <div class="border border-red-200 rounded-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium mb-1">Sign out of all devices</p>
+            <p class="text-[12px] text-gp-mid">This will clear your session and log you out of the admin portal.</p>
+          </div>
+          <button
+            onclick="logout()"
+            class="shrink-0 px-6 py-2.5 border border-gp-red text-gp-red text-[11px] tracking-[.15em] uppercase hover:bg-gp-red hover:text-white transition-all duration-200"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg text-white"></div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   API + AUTH GUARD
+   ───────────────────────────────────────────────────────────── */
+const API = 'http://ecommerce.reworkstaging.name.ng/v2';
+
+const merchantData = localStorage.getItem('goopMerchant');
+if (!merchantData) { window.location.href = 'admin-login.html'; }
+const merchant   = JSON.parse(merchantData);
+const merchantId = merchant._id || merchant.id;
+
+/* ─────────────────────────────────────────────────────────────
+   POPULATE PAGE WITH MERCHANT DATA
+   Pre-fills every field from what was saved during login.
+   No extra API call needed — we already have the data.
+   ───────────────────────────────────────────────────────────── */
+function populatePage() {
+  const fullName  = `${merchant.first_name||''} ${merchant.last_name||''}`.trim() || 'Merchant';
+  const storeName = merchant.store_name || 'My Store';
+  const email     = merchant.email || '';
+  const initial   = fullName.charAt(0).toUpperCase();
+
+  // Sidebar
+  document.getElementById('merchant-name').textContent   = fullName;
+  document.getElementById('merchant-store').textContent  = storeName;
+  document.getElementById('merchant-avatar').textContent = initial;
+
+  // Page header
+  document.getElementById('avatar-large').textContent = initial;
+  document.getElementById('header-name').textContent  = fullName;
+  document.getElementById('header-store').textContent = storeName;
+  document.getElementById('header-email').textContent = email;
+
+  // Profile form fields
+  document.getElementById('p-first').value   = merchant.first_name || '';
+  document.getElementById('p-last').value    = merchant.last_name  || '';
+  document.getElementById('p-email').value   = merchant.email      || '';
+  document.getElementById('p-phone').value   = merchant.phone      || '';
+  document.getElementById('p-store').value   = merchant.store_name || '';
+  document.getElementById('p-descp').value   = merchant.descp      || '';
+  document.getElementById('p-state').value   = merchant.state      || '';
+  document.getElementById('p-district').value= merchant.district   || '';
+  document.getElementById('p-icon').value    = merchant.icon       || '';
+  document.getElementById('p-banner').value  = merchant.banner     || '';
+
+  // Show banner preview if exists
+  if (merchant.banner) {
+    document.getElementById('banner-preview').src = merchant.banner;
+    document.getElementById('banner-preview-wrap').classList.remove('hidden');
+  }
+
+  // Social media fields
+  const social = merchant.social_media || {};
+  document.getElementById('s-x').value  = social.x          || '';
+  document.getElementById('s-fb').value = social.face_book  || '';
+  document.getElementById('s-ig').value = social.instagram  || '';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BANNER URL LIVE PREVIEW
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('p-banner').addEventListener('input', function() {
+  const url  = this.value.trim();
+  const img  = document.getElementById('banner-preview');
+  const wrap = document.getElementById('banner-preview-wrap');
+  if (url) {
+    img.src = url;
+    wrap.classList.remove('hidden');
+    img.onerror = () => wrap.classList.add('hidden');
+  } else {
+    wrap.classList.add('hidden');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   TAB SWITCHER
+   ───────────────────────────────────────────────────────────── */
+function switchTab(tab) {
+  ['profile','password','social'].forEach(t => {
+    document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+    document.getElementById(`tab-${t}`).className =
+      t === tab
+        ? 'tab-active px-6 py-3 text-[11px] tracking-[.2em] uppercase transition-colors'
+        : 'tab-inactive px-6 py-3 text-[11px] tracking-[.2em] uppercase transition-colors';
+  });
+  // Hide all alert banners when switching tabs
+  ['profile-success','profile-error','pw-success','pw-error','social-success','social-error'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   VALIDATION HELPERS
+   ───────────────────────────────────────────────────────────── */
+function isValidEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+
+function setLoading(btnId, textId, spinnerId, on, defaultText) {
+  document.getElementById(btnId).disabled    = on;
+  document.getElementById(textId).textContent = on ? 'Saving…' : defaultText;
+  document.getElementById(spinnerId).classList.toggle('hidden', !on);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PROFILE FORM — SAVE CHANGES
+   PUT /merchants/:merchant_id
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('profile-success').classList.add('hidden');
+  document.getElementById('profile-error').classList.add('hidden');
+
+  const first_name = document.getElementById('p-first').value.trim();
+  const last_name  = document.getElementById('p-last').value.trim();
+  const email      = document.getElementById('p-email').value.trim();
+  const store_name = document.getElementById('p-store').value.trim();
+  let valid        = true;
+
+  // Clear errors
+  ['p-first','p-last','p-email','p-store'].forEach(id => {
+    document.getElementById(id).classList.remove('error');
+  });
+  ['p-first-err','p-last-err','p-email-err','p-store-err'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+
+  if (!first_name)          { document.getElementById('p-first').classList.add('error');  document.getElementById('p-first-err').classList.remove('hidden');  valid = false; }
+  if (!last_name)           { document.getElementById('p-last').classList.add('error');   document.getElementById('p-last-err').classList.remove('hidden');   valid = false; }
+  if (!isValidEmail(email)) { document.getElementById('p-email').classList.add('error');  document.getElementById('p-email-err').classList.remove('hidden');  valid = false; }
+  if (!store_name)          { document.getElementById('p-store').classList.add('error');  document.getElementById('p-store-err').classList.remove('hidden');  valid = false; }
+
+  if (!valid) {
+    document.getElementById('profile-form').classList.add('shake');
+    setTimeout(() => document.getElementById('profile-form').classList.remove('shake'), 400);
+    return;
+  }
+
+  setLoading('profile-btn','profile-btn-text','profile-spinner', true, 'Save Changes');
+
+  // Build payload — matches PUT /merchants/:merchant_id exactly
+  const payload = {
+    first_name,
+    last_name,
+    email,
+    phone:      document.getElementById('p-phone').value.trim(),
+    store_name,
+    descp:      document.getElementById('p-descp').value.trim(),
+    icon:       document.getElementById('p-icon').value.trim(),
+    banner:     document.getElementById('p-banner').value.trim(),
+    state:      document.getElementById('p-state').value.trim(),
+    district:   document.getElementById('p-district').value.trim(),
+    phones:     [],
+    social_media: {
+      x:         document.getElementById('s-x').value.trim(),
+      face_book: document.getElementById('s-fb').value.trim(),
+      instagram: document.getElementById('s-ig').value.trim(),
+    },
+  };
+
+  try {
+    /* ── REAL API CALL ─────────────────────────────────────────
+       PUT /merchants/:merchant_id
+       Updates the merchant profile on the server.
+       ────────────────────────────────────────────────────────── */
+    const res  = await fetch(`${API}/merchants/${merchantId}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Update failed.');
+
+    /* ── SUCCESS ────────────────────────────────────────────────
+       Merge updated fields back into localStorage so the
+       sidebar and header reflect the changes immediately
+       without needing to log out and back in.
+       ────────────────────────────────────────────────────────── */
+    const updated = { ...merchant, ...payload };
+    localStorage.setItem('goopMerchant', JSON.stringify(updated));
+
+    // Update page header instantly
+    const newFullName = `${first_name} ${last_name}`.trim();
+    document.getElementById('avatar-large').textContent   = newFullName.charAt(0).toUpperCase();
+    document.getElementById('header-name').textContent    = newFullName;
+    document.getElementById('header-store').textContent   = store_name;
+    document.getElementById('header-email').textContent   = email;
+    document.getElementById('merchant-name').textContent  = newFullName;
+    document.getElementById('merchant-store').textContent = store_name;
+    document.getElementById('merchant-avatar').textContent= newFullName.charAt(0).toUpperCase();
+
+    document.getElementById('profile-success').classList.remove('hidden');
+    showToast('Profile updated!', 'success');
+
+  } catch(err) {
+    document.getElementById('profile-error-text').textContent = err.message;
+    document.getElementById('profile-error').classList.remove('hidden');
+  } finally {
+    setLoading('profile-btn','profile-btn-text','profile-spinner', false, 'Save Changes');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   RESET PROFILE FORM
+   Reverts fields back to what's currently in localStorage.
+   ───────────────────────────────────────────────────────────── */
+function resetProfileForm() {
+  populatePage();
+  document.getElementById('profile-success').classList.add('hidden');
+  document.getElementById('profile-error').classList.add('hidden');
+  showToast('Changes discarded.', 'success');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PASSWORD FORM
+   PUT /merchants/:merchant_id/change-passwd
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('password-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('pw-success').classList.add('hidden');
+  document.getElementById('pw-error').classList.add('hidden');
+
+  const oldPw  = document.getElementById('pw-old').value;
+  const newPw  = document.getElementById('pw-new').value;
+  const confirm= document.getElementById('pw-confirm').value;
+  let valid    = true;
+
+  // Clear errors
+  ['pw-old','pw-new','pw-confirm'].forEach(id => document.getElementById(id).classList.remove('error'));
+  ['pw-old-err','pw-new-err','pw-confirm-err'].forEach(id => document.getElementById(id).classList.add('hidden'));
+
+  if (!oldPw)           { document.getElementById('pw-old').classList.add('error');     document.getElementById('pw-old-err').classList.remove('hidden');     valid = false; }
+  if (newPw.length < 8) { document.getElementById('pw-new').classList.add('error');     document.getElementById('pw-new-err').classList.remove('hidden');     valid = false; }
+  if (newPw !== confirm){ document.getElementById('pw-confirm').classList.add('error'); document.getElementById('pw-confirm-err').classList.remove('hidden'); valid = false; }
+
+  if (!valid) {
+    document.getElementById('password-form').classList.add('shake');
+    setTimeout(() => document.getElementById('password-form').classList.remove('shake'), 400);
+    return;
+  }
+
+  setLoading('pw-btn','pw-btn-text','pw-spinner', true, 'Update Password');
+
+  try {
+    /* ── REAL API CALL ─────────────────────────────────────────
+       PUT /merchants/:merchant_id/change-passwd
+       ────────────────────────────────────────────────────────── */
+    const res  = await fetch(`${API}/merchants/${merchantId}/change-passwd`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ old_password: oldPw, new_password: newPw }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Password change failed.');
+
+    // Clear the form on success
+    document.getElementById('password-form').reset();
+    // Reset strength meter
+    [1,2,3,4].forEach(i => {
+      document.getElementById(`str-${i}`).style.width = '0%';
+    });
+    document.getElementById('str-label').textContent = '';
+
+    document.getElementById('pw-success').classList.remove('hidden');
+    showToast('Password updated!', 'success');
+
+  } catch(err) {
+    document.getElementById('pw-error-text').textContent = err.message;
+    document.getElementById('pw-error').classList.remove('hidden');
+  } finally {
+    setLoading('pw-btn','pw-btn-text','pw-spinner', false, 'Update Password');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   SOCIAL MEDIA FORM
+   Also uses PUT /merchants/:merchant_id — just sends the
+   social_media object along with existing profile fields.
+   ───────────────────────────────────────────────────────────── */
+document.getElementById('social-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('social-success').classList.add('hidden');
+  document.getElementById('social-error').classList.add('hidden');
+
+  setLoading('social-btn','social-btn-text','social-spinner', true, 'Save Social Links');
+
+  // We send the full merchant payload but only update social_media
+  const payload = {
+    first_name:  merchant.first_name || '',
+    last_name:   merchant.last_name  || '',
+    email:       merchant.email      || '',
+    phone:       merchant.phone      || '',
+    store_name:  merchant.store_name || '',
+    descp:       merchant.descp      || '',
+    icon:        merchant.icon       || '',
+    banner:      merchant.banner     || '',
+    state:       merchant.state      || '',
+    district:    merchant.district   || '',
+    phones:      [],
+    social_media: {
+      x:         document.getElementById('s-x').value.trim(),
+      face_book: document.getElementById('s-fb').value.trim(),
+      instagram: document.getElementById('s-ig').value.trim(),
+    },
+  };
+
+  try {
+    const res  = await fetch(`${API}/merchants/${merchantId}`, {
+      method:  'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Update failed.');
+
+    // Update localStorage
+    const updated = { ...merchant, social_media: payload.social_media };
+    localStorage.setItem('goopMerchant', JSON.stringify(updated));
+
+    document.getElementById('social-success').classList.remove('hidden');
+    showToast('Social links saved!', 'success');
+
+  } catch(err) {
+    document.getElementById('social-error-text').textContent = err.message;
+    document.getElementById('social-error').classList.remove('hidden');
+  } finally {
+    setLoading('social-btn','social-btn-text','social-spinner', false, 'Save Social Links');
+  }
+});
+
+/* ─────────────────────────────────────────────────────────────
+   PASSWORD VISIBILITY TOGGLE
+   ───────────────────────────────────────────────────────────── */
+function togglePw(inputId, btn) {
+  const input   = document.getElementById(inputId);
+  const isHidden= input.type === 'password';
+  input.type    = isHidden ? 'text' : 'password';
+  btn.innerHTML = isHidden
+    ? `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`
+    : `<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.964-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PASSWORD STRENGTH METER
+   ───────────────────────────────────────────────────────────── */
+function checkStrength(pw) {
+  let score = 0;
+  if (pw.length >= 8)           score++;
+  if (/[A-Z]/.test(pw))         score++;
+  if (/[0-9]/.test(pw))         score++;
+  if (/[^A-Za-z0-9]/.test(pw))  score++;
+
+  const colors = ['','#dc2626','#f97316','#eab308','#16a34a'];
+  const labels = ['','Weak','Fair','Good','Strong'];
+
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.getElementById(`str-${i}`);
+    bar.style.width      = i <= score ? '100%' : '0%';
+    bar.style.background = i <= score ? colors[score] : '';
+  }
+  const lbl = document.getElementById('str-label');
+  lbl.textContent = pw.length > 0 ? labels[score] : '';
+  lbl.style.color = colors[score];
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TOAST + SIDEBAR + LOGOUT
+   ───────────────────────────────────────────────────────────── */
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className   = `fixed bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 text-[11px] tracking-[.15em] uppercase z-[999] shadow-lg text-white ${type==='error'?'bg-gp-red':'bg-gp'}`;
+  t.classList.remove('hidden');
+  setTimeout(() => { t.style.opacity='0'; }, 2500);
+  setTimeout(() => { t.classList.add('hidden'); t.style.opacity='1'; }, 3000);
+}
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('-translate-x-full');
+  document.getElementById('overlay').classList.toggle('hidden');
+}
+function logout() {
+  if (confirm('Sign out of the admin portal?')) {
+    localStorage.removeItem('goopMerchant');
+    window.location.href = 'admin-login.html';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INIT
+   ───────────────────────────────────────────────────────────── */
+populatePage();
+</script>
+</body>
+</html>
